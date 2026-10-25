@@ -12,7 +12,7 @@
 | Etap | Nazwa | Rezultat | Status |
 |---|---|---|---|
 | 1 | **Poprzeczka** | Lista benchmarków + wzorce + luka rynkowa → [`01-poprzeczka-research.md`](01-poprzeczka-research.md) | ✅ wersja robocza, czeka na Twoje oceny |
-| 2 | Koncept i narracja | 3 kierunki kreatywne → wybór 1. Big idea, storyboard, sitemap | ⏳ |
+| 2 | Koncept i narracja | Big idea „Dwa światy. Jedno studio.", storyboard 7 ekranów, działający prototyp → [`02-koncept-storyboard.md`](02-koncept-storyboard.md), [`prototyp/`](prototyp/index.html) | 🟡 prototyp gotowy, czeka na ocenę |
 | 3 | Design system „zmiennokształtny" | Tokeny, które pozwalają przełączać całe estetyki. 4–6 „skórek" | ⏳ |
 | 4 | Prototypy motion (R&D) | 3–5 technicznych spike'ów: przejście shaderem, morph skórek, persistent canvas | ⏳ |
 | 5 | Produkcja | Pełna strona, case studies, treści PL/EN | ⏳ |
