@@ -1,0 +1,502 @@
+<title>AX Studio v2 · 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="AX Studio projektuje i koduje strony internetowe, identyfikacje wizualne, grafiki i motion design oraz buduje automatyzacje dla firm.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Układ: kinowa opowieść. Pod spodem jedno płótno WebGL z fotorealistycznymi kadrami 3D,
+   które przechodzą w siebie shaderami w rytm przewijania. Na wierzchu jedna, spokojna
+   typografia. Strona celowo jest tylko ciemna. */
+:root{
+  color-scheme: dark;
+  --bg:#050507; --fg:#ece9e2; --muted:#8d8a83; --line:rgba(236,233,226,.16);
+  --acc:#cfd8ff;
+  --f-sans:"Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-serif:"Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --f-mono:"Geist Mono", ui-monospace, Menlo, Consolas, monospace;
+  --gl: max(16px, env(safe-area-inset-left, 0px));
+  --gr: max(16px, env(safe-area-inset-right, 0px));
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--f-sans);font-weight:300;font-size:16px;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:120;background:var(--bg)}
+h1,h2,h3,p{margin:0}
+h1,h2{text-wrap:balance;font-weight:300;letter-spacing:-.035em}
+em{font-family:var(--f-serif);font-style:italic;font-weight:400;letter-spacing:-.01em;color:var(--acc);transition:color 1.2s ease}
+:focus-visible{outline:1px solid var(--acc);outline-offset:4px}
+.mono{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.todo{border-bottom:1px dashed var(--acc);color:var(--fg)}
+
+/* ---------- Scena ---------- */
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+.shade{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(5,5,7,.78) 0%,rgba(5,5,7,.35) 42%,rgba(5,5,7,0) 70%),linear-gradient(0deg,rgba(5,5,7,.55),rgba(5,5,7,0) 35%)}
+@media (max-width:760px){.shade{background:linear-gradient(0deg,rgba(5,5,7,.92) 0%,rgba(5,5,7,.6) 45%,rgba(5,5,7,.1) 75%)}}
+.fallback{position:fixed;inset:0;z-index:0;background-size:cover;background-position:60% center;transition:opacity 1s}
+
+/* ---------- Nawigacja i HUD ---------- */
+.nav{position:fixed;z-index:100;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding-block:22px;padding-left:calc(var(--gl) + 2vw);padding-right:calc(var(--gr) + 2vw)}
+.logo{font-weight:500;letter-spacing:-.02em;font-size:1.05rem;text-decoration:none;color:var(--fg)}
+.logo b{font-family:var(--f-serif);font-style:italic;font-weight:400;color:var(--acc);transition:color 1.2s}
+.nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0}
+.nav a{color:var(--fg);text-decoration:none;font-size:.88rem;opacity:.75;transition:opacity .3s}
+.nav a:hover{opacity:1}
+@media (max-width:760px){.nav ul{display:none}}
+.hud{position:fixed;z-index:60;right:calc(var(--gr) + 2vw);top:50%;translate:0 -50%;display:grid;gap:10px;justify-items:end}
+.hud i{display:block;height:1px;width:14px;background:var(--fg);opacity:.3;transition:width .6s cubic-bezier(.2,.8,.2,1),opacity .6s}
+.hud i.on{width:44px;opacity:1;background:var(--acc)}
+.hud span{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;margin-top:10px;color:var(--fg)}
+@media (max-width:760px){.hud{display:none}}
+
+/* ---------- Rozdziały ---------- */
+main{position:relative;z-index:2}
+.ch{position:relative;height:230vh}
+.ch.last{height:150vh}
+.panel{position:sticky;top:0;height:100vh;height:100svh;display:flex;align-items:center;
+  padding-left:calc(var(--gl) + 5vw);padding-right:calc(var(--gr) + 8vw);padding-block:96px}
+.copy{max-width:640px;display:grid;gap:26px;will-change:opacity,transform}
+.copy h1{font-size:clamp(2.9rem,7.2vw,7.4rem);line-height:.92}
+.copy h2{font-size:clamp(2.4rem,5.4vw,5.4rem);line-height:.95}
+.copy p.lead{font-size:clamp(1rem,1.25vw,1.15rem);max-width:46ch;color:#d8d4cb}
+.steps{display:flex;flex-wrap:wrap;gap:10px 18px;font-family:var(--f-mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.steps span:not(:last-child)::after{content:"→";margin-left:18px;color:var(--acc)}
+@media (max-width:760px){
+  .panel{align-items:flex-end;padding-left:calc(var(--gl) + 4px);padding-right:calc(var(--gr) + 4px);padding-block:96px 120px}
+}
+
+/* Realizacje */
+.works{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.works li{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:14px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;transition:padding .4s cubic-bezier(.2,.8,.2,1)}
+.works li:hover,.works li:focus-visible{padding-left:12px}
+.works .n{font-family:var(--f-mono);font-size:.72rem;color:var(--acc)}
+.works h3{font-weight:300;font-size:clamp(1.2rem,2vw,1.6rem);letter-spacing:-.02em;margin:0}
+.works .t{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+@media (max-width:520px){.works .t{display:none}}
+.note{font-size:.8rem;color:var(--muted)}
+
+/* Opinie */
+.quotes{display:grid}
+.q{grid-area:1/1;opacity:0;transition:opacity 1.4s ease,translate 1.4s ease;translate:0 10px;visibility:hidden}
+.q.on{opacity:1;translate:0 0;visibility:visible}
+.q blockquote{margin:0;font-family:var(--f-serif);font-style:italic;font-size:clamp(1.7rem,3.4vw,3rem);line-height:1.12;letter-spacing:-.01em}
+.q figcaption{margin-top:18px}
+.q small{display:block;margin-top:6px;font-size:.78rem;color:var(--muted)}
+
+/* Automatyzacje */
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em}
+.flow span{border:1px solid var(--line);padding:7px 10px;border-radius:999px;background:rgba(5,5,7,.4);backdrop-filter:blur(6px)}
+.flow b{font-weight:400;color:var(--acc)}
+.svc{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:.95rem;color:#d8d4cb}
+.svc li::before{content:"— ";color:var(--acc)}
+
+/* Finał */
+.big{justify-self:start;display:inline-flex;align-items:center;gap:18px;font:inherit;font-weight:400;font-size:clamp(1.05rem,1.6vw,1.3rem);
+  color:var(--bg);background:var(--fg);border:0;border-radius:999px;padding:20px 30px;cursor:pointer;transition:background .4s,scale .4s}
+.big:hover{background:var(--acc);scale:1.03}
+.big span{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--bg);color:var(--fg)}
+.foot{position:absolute;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;
+  padding-block:22px calc(22px + env(safe-area-inset-bottom,0px));padding-left:calc(var(--gl) + 2vw);padding-right:calc(var(--gr) + 2vw);border-top:1px solid var(--line)}
+
+/* ---------- Przycisk rozmowy (przez wszystkie ekrany) ---------- */
+.cta{position:fixed;z-index:90;right:calc(24px + env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  display:inline-flex;align-items:center;gap:12px;padding:14px 20px 14px 16px;border-radius:999px;cursor:pointer;
+  font:inherit;font-weight:400;font-size:.95rem;color:var(--fg);background:rgba(20,20,24,.45);border:1px solid var(--line);
+  backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+  transition:opacity .5s,translate .5s,border-color 1.2s;will-change:transform}
+.cta:hover{border-color:var(--acc)}
+.cta .dot{position:relative;width:10px;height:10px;border-radius:50%;background:var(--acc);transition:background 1.2s;flex:none}
+.cta .dot::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid var(--acc);animation:ping 2.4s ease-out infinite}
+@keyframes ping{from{opacity:.9;scale:.6}to{opacity:0;scale:1.8}}
+.cta .lbl{display:inline-block;transition:opacity .35s,translate .35s}
+.cta .lbl.swap{opacity:0;translate:0 6px}
+.cta.is-hidden{opacity:0;translate:0 24px;pointer-events:none}
+@media (max-width:520px){.cta{left:calc(16px + env(safe-area-inset-left,0px));right:calc(16px + env(safe-area-inset-right,0px));justify-content:center}}
+
+/* ---------- Wczytywanie ---------- */
+.loader{position:fixed;inset:0;z-index:200;background:var(--bg);display:grid;place-items:center;transition:clip-path 1.4s cubic-bezier(.77,0,.18,1);clip-path:inset(0 0 0 0)}
+.loader.done{clip-path:inset(0 0 100% 0)}
+.loader div{display:grid;justify-items:center;gap:14px}
+.loader strong{font-weight:300;font-size:clamp(3rem,9vw,7rem);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+
+/* ---------- Okno rozmowy ---------- */
+dialog{border:1px solid var(--line);padding:0;max-width:min(540px,calc(100vw - 32px));width:100%;background:#0d0d10;color:var(--fg);border-radius:18px}
+dialog::backdrop{background:rgba(5,5,7,.7);backdrop-filter:blur(8px)}
+.dlg{padding:30px;display:grid;gap:16px}
+.dlg h2{font-size:2rem;line-height:1}
+.dlg p{color:var(--muted)}
+.dlg label{display:grid;gap:6px;font-size:.85rem}
+.dlg input,.dlg select,.dlg textarea{font:inherit;font-weight:400;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:#16161a;color:var(--fg);width:100%}
+.dlg .row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.dlg button{font:inherit;font-weight:400;border-radius:999px;padding:11px 18px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--fg)}
+.dlg button.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.dlg .done{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:.9rem;color:var(--fg)}
+
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+
+<div class="loader" id="loader" aria-hidden="true"><div><strong id="ld-n">0</strong><span class="mono">Wczytuję światy AX</span></div></div>
+
+<header class="nav">
+  <a class="logo" href="#c0" data-go>AX <b>Studio</b></a>
+  <nav aria-label="Rozdziały"><ul>
+    <li><a href="#c1" data-go>Geneza</a></li>
+    <li><a href="#c3" data-go>Realizacje</a></li>
+    <li><a href="#c4" data-go>Opinie</a></li>
+    <li><a href="#c5" data-go>Automatyzacje</a></li>
+    <li><a href="#c6" data-go>Kontakt</a></li>
+  </ul></nav>
+</header>
+
+<div class="fallback" id="fallback" hidden></div>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="shade" aria-hidden="true"></div>
+
+<div class="hud" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><span id="hud-name">Start</span></div>
+
+<main>
+  <section class="ch" id="c0" data-name="Start" data-acc="#cfd8ff" data-cta="Umów rozmowę z Kubą">
+    <div class="panel"><div class="copy">
+      <p class="mono">AX Studio · studio kreatywno-technologiczne</p>
+      <h1>Dwa światy. <em>Jedno studio.</em></h1>
+      <p class="lead">AX Studio projektuje i koduje strony internetowe, identyfikacje wizualne, grafiki i&nbsp;motion design. Budujemy też automatyzacje, które zdejmują z&nbsp;firm powtarzalną pracę. Łączymy wyobraźnię projektanta z&nbsp;precyzją inżyniera, żeby Twoja marka wyglądała świetnie i&nbsp;działała sprawniej.</p>
+      <p class="mono">Przewiń, żeby wejść do środka</p>
+    </div></div>
+  </section>
+
+  <section class="ch" id="c1" data-name="Geneza" data-acc="#ffb46a" data-cta="Pogadaj z Kubą">
+    <div class="panel"><div class="copy">
+      <p class="mono">Rozdział 01 · Geneza</p>
+      <h2>Wszystko zaczęło się <em>w piaskownicy.</em></h2>
+      <p class="lead">Kuba i <span class="todo">[imię wspólnika]</span> znają się od dziecka. Jeden budował zamki z&nbsp;piasku, drugi od razu planował do nich fosę z&nbsp;działającym mostem zwodzonym. Zajawki rosły razem z&nbsp;nami: rysunki, pierwsze strony, pierwsze programy, pierwsi klienci.</p>
+      <p class="steps"><span>Piaskownica</span><span>Podwórko</span><span>Pierwsze zlecenia</span><span>AX Studio</span></p>
+    </div></div>
+  </section>
+
+  <section class="ch" id="c2" data-name="Dwa światy" data-acc="#7fe8ff" data-cta="Połączmy Twoje dwa światy">
+    <div class="panel"><div class="copy">
+      <p class="mono">Rozdział 02 · Dwa skrajne światy</p>
+      <h2>Jeden czuje <em>formę</em>. Drugi czuje <em>system</em>.</h2>
+      <p class="lead">Płynny chrom i&nbsp;czarny kamień. Wyobraźnia i&nbsp;logika. Osobno byłoby tylko ładnie albo tylko sprawnie. Razem robimy rzeczy, które wyglądają świetnie i&nbsp;naprawdę działają.</p>
+    </div></div>
+  </section>
+
+  <section class="ch" id="c3" data-name="Realizacje" data-acc="#c3b3ff" data-cta="Chcę taki projekt">
+    <div class="panel"><div class="copy">
+      <p class="mono">Rozdział 03 · Realizacje</p>
+      <h2>Każdy projekt <em>to inny świat.</em></h2>
+      <ol class="works">
+        <li tabindex="0" data-open><span class="n">01</span><h3>Sklep z modą</h3><span class="t">E-commerce · UI</span></li>
+        <li tabindex="0" data-open><span class="n">02</span><h3>Kawiarnia na rogu</h3><span class="t">Identyfikacja</span></li>
+        <li tabindex="0" data-open><span class="n">03</span><h3>Kancelaria prawna</h3><span class="t">Strona firmowa</span></li>
+        <li tabindex="0" data-open><span class="n">04</span><h3>Biuro nieruchomości</h3><span class="t">Automatyzacja</span></li>
+        <li tabindex="0" data-open><span class="n">05</span><h3>Marka sportowa</h3><span class="t">Kampania · Motion</span></li>
+      </ol>
+      <p class="note">Pozycje przykładowe, podmienimy je na prawdziwe projekty.</p>
+    </div></div>
+  </section>
+
+  <section class="ch" id="c4" data-name="Opinie" data-acc="#e6c98f" data-cta="Porozmawiaj z Kubą">
+    <div class="panel"><div class="copy">
+      <p class="mono">Rozdział 04 · Opinie</p>
+      <div class="quotes" aria-live="polite">
+        <figure class="q on"><blockquote>„Dostaliśmy stronę, którą klienci komentują na spotkaniach. A&nbsp;formularz sam wpada do naszego CRM-u.”</blockquote><figcaption class="mono">Imię Nazwisko · Firma<small>przykładowa opinia, podmienimy na prawdziwą</small></figcaption></figure>
+        <figure class="q"><blockquote>„Jedna ekipa zrobiła nam logo, stronę i&nbsp;automatyczne faktury. Nie musieliśmy niczego tłumaczyć dwa razy.”</blockquote><figcaption class="mono">Imię Nazwisko · Firma<small>przykładowa opinia, podmienimy na prawdziwą</small></figcaption></figure>
+        <figure class="q"><blockquote>„Kuba najpierw zapytał o&nbsp;nasz biznes, dopiero potem o&nbsp;kolory.”</blockquote><figcaption class="mono">Imię Nazwisko · Firma<small>przykładowa opinia, podmienimy na prawdziwą</small></figcaption></figure>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="ch" id="c5" data-name="Automatyzacje" data-acc="#ffab2e" data-cta="Co możemy zautomatyzować?">
+    <div class="panel"><div class="copy">
+      <p class="mono">Rozdział 05 · Automatyzacje</p>
+      <h2>Mechanizmy, które <em>pracują, gdy śpisz.</em></h2>
+      <p class="flow" aria-label="Przykładowy przepływ"><span>Formularz</span><b>→</b><span>CRM</span><b>→</b><span>Wycena PDF</span><b>→</b><span>E-mail</span><b>→</b><span>Powiadomienie do Kuby</span></p>
+      <ul class="svc">
+        <li>Obsługa zapytań i leadów od formularza do CRM</li>
+        <li>Faktury, przypomnienia o płatnościach, raporty</li>
+        <li>Integracje narzędzi, których już używasz</li>
+        <li>Asystenci AI do odpowiedzi i dokumentów</li>
+      </ul>
+    </div></div>
+  </section>
+
+  <section class="ch last" id="c6" data-name="Kontakt" data-acc="#ffffff" data-cta="">
+    <div class="panel"><div class="copy">
+      <p class="mono">Rozdział 06 · Twoja kolej</p>
+      <h2>Dwa światy, jeden cel: <em>Twoja firma.</em></h2>
+      <p class="lead">Umów rozmowę z&nbsp;Kubą. Opowiedz, czym się zajmujesz i&nbsp;co Cię blokuje. Może wspólnie znajdziemy sposób, jak pomóc Twojej firmie w&nbsp;rozwoju.</p>
+      <button class="big" type="button" data-open>Umów rozmowę z&nbsp;Kubą <span aria-hidden="true">→</span></button>
+    </div></div>
+    <footer class="foot mono"><span>© 2026 AX Studio · ax-studio.pl</span><span>Prototyp v2 · kadry wygenerowane AI, treści robocze</span></footer>
+  </section>
+</main>
+
+<button class="cta" id="cta" type="button" data-open><span class="dot" aria-hidden="true"></span><span class="lbl">Umów rozmowę z Kubą</span></button>
+
+<dialog id="dlg" aria-labelledby="dlg-h">
+  <form class="dlg" id="dlg-form" method="dialog">
+    <h2 id="dlg-h">Rozmowa <em>z Kubą</em></h2>
+    <p>Napisz dwa zdania o swojej firmie. Kuba odezwie się i zaproponuje termin.</p>
+    <label for="f-name">Imię<input id="f-name" name="name" autocomplete="given-name" required></label>
+    <label for="f-mail">E-mail<input id="f-mail" name="email" type="email" autocomplete="email" required></label>
+    <label for="f-topic">W czym możemy pomóc?
+      <select id="f-topic" name="topic"><option>Nowa strona internetowa</option><option>Identyfikacja wizualna i grafiki 3D</option><option>Automatyzacja w firmie</option><option>Jeszcze nie wiem, chcę pogadać</option></select>
+    </label>
+    <label for="f-msg">Kilka słów o firmie<textarea id="f-msg" name="msg" rows="3"></textarea></label>
+    <p class="done" id="dlg-done" hidden>To prototyp, więc formularz niczego jeszcze nie wysyła. W wersji produkcyjnej podepniemy tu kalendarz Kuby.</p>
+    <div class="row"><button type="button" id="dlg-close">Zamknij</button><button type="submit" class="primary">Wyślij</button></div>
+  </form>
+</dialog>
+
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const chapters = $$('.ch');
+  const N = chapters.length;
+  const IMGS = Array.from({ length: N }, (_, i) => `assets/k${i}.jpg`);
+  // Przejście NA rozdział i: 1 piasek, 2 roztopiony chrom, 3 rozcięcie, 4 tunel, 5 glitch, 6 fala
+  const TYPES = [0, 0, 1, 2, 3, 4, 5];
+
+  /* ---------- Płynny scroll ---------- */
+  let lenis = null;
+  if (window.Lenis && !reduce) lenis = new Lenis({ lerp: 0.075 });
+
+  /* ---------- Wczytanie kadrów ---------- */
+  let loaded = 0;
+  const ldN = $('#ld-n');
+  const images = IMGS.map(src => new Promise(res => {
+    const im = new Image();
+    im.decoding = 'async';
+    im.onload = () => { loaded++; ldN.textContent = Math.round(loaded / N * 100); res(im); };
+    im.onerror = () => { loaded++; ldN.textContent = Math.round(loaded / N * 100); res(null); };
+    im.src = src;
+  }));
+  const timeout = new Promise(res => setTimeout(res, 9000));
+
+  /* ---------- WebGL ---------- */
+  const canvas = $('#gl');
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false });
+  const VS = `attribute vec2 p;varying vec2 vUv;void main(){vUv=p*.5+.5;gl_Position=vec4(p,0.,1.);}`;
+  const FS = `precision highp float;
+varying vec2 vUv;
+uniform sampler2D tA,tB;uniform vec2 uRes,rA,rB,uMouse;uniform float uP,uT,uType,uVel,uZA,uZB,uMotion;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n2(p);p*=2.03;a*=.5;}return v;}
+vec2 cover(vec2 uv,vec2 img){float rs=uRes.x/uRes.y,ri=img.x/img.y;vec2 s=rs>ri?vec2(1.,ri/rs):vec2(rs/ri,1.);
+  vec2 c=(uv-.5)*s+.5; if(rs<.9) c.x+= .18*(1.-s.x); return c;}
+vec3 tex(sampler2D t,vec2 img,vec2 uv,float z,float ca){
+  vec2 c=cover(uv,img);c=(c-.5)/z+.5;c+=uMouse*.012*uMotion;
+  vec2 o=vec2(ca,0.);
+  return vec3(texture2D(t,c+o).r,texture2D(t,c).g,texture2D(t,c-o).b);}
+void main(){
+  float asp=uRes.x/uRes.y;vec2 uv=vUv;
+  // soczewka pod kursorem
+  vec2 m=uMouse*.5+.5;vec2 dv=(uv-m)*vec2(asp,1.);float d=length(dv);
+  uv-=(uv-m)*smoothstep(.32,0.,d)*.07*uMotion;
+  uv+=dv/max(d,1e-3)*sin(d*38.-uT*3.)*.0016*smoothstep(.45,.0,d)*uMotion;
+  float p=uP,e=p*p*(3.-2.*p),bell=sin(p*3.14159);
+  float ca=.0018+bell*.009+uVel*.02;
+  vec3 col;
+  if(uType<.5){ // piasek: ziarnisty rozpad z żarzącą się krawędzią
+    float nz=fbm(uv*vec2(asp,1.)*5.+uT*.05)*.75+h(floor(uv*uRes/2.))*.25;
+    float th=e*1.25-.12;float mk=smoothstep(th-.03,th+.03,nz);
+    vec3 a=tex(tA,rA,uv+vec2(0.,e*.04*(1.-mk)),uZA+e*.12,ca),b=tex(tB,rB,uv,uZB+(1.-e)*.12,ca);
+    col=mix(b,a,mk);col+=vec3(1.,.62,.25)*smoothstep(.06,0.,abs(nz-th))*bell*1.4;
+  } else if(uType<1.5){ // roztopiony chrom: obraz spływa w dół
+    float drip=fbm(vec2(uv.x*7.,uT*.1))*.5;float yt=1.-uv.y;
+    float edge=e*1.55-drip*e;float mk=smoothstep(edge,edge-.02,yt);
+    vec3 a=tex(tA,rA,uv+vec2(0.,e*(.35+drip)*mk*0.+e*e*.5*(1.-mk)),uZA,ca);
+    vec3 b=tex(tB,rB,uv+vec2(0.,(1.-e)*.15),uZB+(1.-e)*.2,ca);
+    col=mix(a,b,mk);col+=vec3(.75,.95,1.)*smoothstep(.03,0.,abs(yt-edge))*bell*.9;
+  } else if(uType<2.5){ // rozcięcie: dwie połówki rozjeżdżają się od szwu
+    float s=uv.x<.5?1.:-1.;float gap=e*.5;
+    vec2 ua=uv+vec2(s*gap,0.);bool inA=s>0.?ua.x<.5:ua.x>.5;
+    vec3 b=tex(tB,rB,uv,uZB+(1.-e)*.35,ca*1.4);
+    vec3 a=tex(tA,rA,ua,uZA,ca);
+    col=inA?a:b;float seam=min(abs(ua.x-.5),1.);col+=vec3(.6,.95,1.)*smoothstep(.006,0.,seam)*bell*2.;
+  } else if(uType<3.5){ // tunel: wlot w głąb kadru z rozmyciem radialnym
+    vec2 c=uv-.5;vec3 a=vec3(0.),b=vec3(0.);
+    for(int i=0;i<10;i++){float k=float(i)/9.;
+      a+=tex(tA,rA,.5+c/(1.+e*2.2+k*bell*.25),uZA,ca);
+      b+=tex(tB,rB,.5+c*(1.+(1.-e)*.9+k*bell*.25),uZB,ca);}
+    a/=10.;b/=10.;col=mix(a,b,smoothstep(.35,.75,p));
+  } else if(uType<4.5){ // glitch: bloki cyfrowego sygnału
+    vec2 bl=floor(uv*vec2(18.,28.));float r=h(bl+floor(uT*14.));
+    float mk=step(r,e*1.1-.05);float j=(h(bl.yy+floor(uT*30.))-.5)*.08*bell;
+    vec3 a=tex(tA,rA,uv+vec2(j,0.),uZA,ca+bell*.02),b=tex(tB,rB,uv-vec2(j,0.),uZB,ca+bell*.02);
+    col=mix(a,b,mk);col*=1.-bell*.25*step(.5,fract(uv.y*uRes.y*.25));
+    col+=vec3(1.,.66,.1)*step(.985,h(bl*1.7+floor(uT*20.)))*bell;
+  } else { // fala: chromowa fala uderzeniowa od środka
+    vec2 c=(uv-.5)*vec2(asp,1.);float dd=length(c);float w=e*1.25;
+    float ring=exp(-abs(dd-w)*18.)*bell;vec2 off=normalize(c+1e-4)*sin((dd-w)*55.)*.025*ring;
+    vec3 a=tex(tA,rA,uv+off,uZA,ca+ring*.01),b=tex(tB,rB,uv+off,uZB+(1.-e)*.1,ca+ring*.01);
+    col=mix(b,a,smoothstep(w-.02,w+.02,dd));col+=vec3(1.)*ring*.25;
+  }
+  // ziarno filmowe i winieta
+  col+=(h(vUv*uRes+fract(uT)*100.)-.5)*.045;
+  vec2 q=vUv-.5;col*=1.-dot(q,q)*.55;
+  gl_FragColor=vec4(col,1.);
+}`;
+  let G = null;
+  if (gl) {
+    const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) { console.warn(gl.getShaderInfoLog(o)); return null; } return o; };
+    const v = sh(gl.VERTEX_SHADER, VS), f = sh(gl.FRAGMENT_SHADER, FS);
+    if (v && f) {
+      const pr = gl.createProgram(); gl.attachShader(pr, v); gl.attachShader(pr, f); gl.linkProgram(pr); gl.useProgram(pr);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const U = {}; ['tA', 'tB', 'uRes', 'rA', 'rB', 'uMouse', 'uP', 'uT', 'uType', 'uVel', 'uZA', 'uZB', 'uMotion'].forEach(n => U[n] = gl.getUniformLocation(pr, n));
+      gl.uniform1i(U.tA, 0); gl.uniform1i(U.tB, 1);
+      G = { U, tex: [], size: [] };
+    }
+  }
+  const mkTex = (im) => {
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (im) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, im);
+    else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([8, 8, 10]));
+    return t;
+  };
+  const resize = () => {
+    let dpr = Math.min(devicePixelRatio || 1, 1.75);
+    const px = innerWidth * innerHeight;
+    if (px * dpr * dpr > 3.2e6) dpr = Math.sqrt(3.2e6 / px);
+    canvas.width = Math.round(innerWidth * dpr); canvas.height = Math.round(innerHeight * dpr);
+    if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+  };
+  resize(); addEventListener('resize', resize);
+
+  /* ---------- Stan przewijania ---------- */
+  const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+  addEventListener('pointermove', e => { mouse.tx = e.clientX / innerWidth * 2 - 1; mouse.ty = -(e.clientY / innerHeight * 2 - 1); });
+  const tops = () => chapters.map(c => c.offsetTop);
+  let T = tops(); addEventListener('resize', () => { T = tops(); });
+  const clamp = (v, a = 0, b = 1) => Math.min(Math.max(v, a), b);
+  // Pozycja w historii: część całkowita = rozdział, ułamek = postęp przejścia na następny.
+  const story = (y) => {
+    const vh = innerHeight;
+    for (let i = 0; i < N; i++) {
+      const start = T[i], end = i < N - 1 ? T[i + 1] : start + chapters[i].offsetHeight;
+      if (y < end || i === N - 1) {
+        const local = clamp((y - start) / (end - start - vh));
+        const win = 0.95 * vh;
+        const tp = i < N - 1 ? clamp((y - (end - win)) / win) : 0;
+        return { i, tp, local };
+      }
+    }
+    return { i: 0, tp: 0, local: 0 };
+  };
+
+  /* ---------- HUD, akcent, przycisk ---------- */
+  const hudTicks = $$('.hud i'), hudName = $('#hud-name'), cta = $('#cta'), lbl = $('.lbl', cta), root = document.documentElement;
+  let active = -1;
+  const setActive = (i) => {
+    if (i === active) return; active = i;
+    const ch = chapters[i];
+    root.style.setProperty('--acc', ch.dataset.acc);
+    hudTicks.forEach((t, k) => t.classList.toggle('on', k === i));
+    hudName.textContent = ch.dataset.name;
+    const text = ch.dataset.cta;
+    cta.classList.toggle('is-hidden', !text);
+    if (text && lbl.textContent !== text) { lbl.classList.add('swap'); setTimeout(() => { lbl.textContent = text; lbl.classList.remove('swap'); }, 300); }
+  };
+  // Magnetyczny przycisk
+  cta.addEventListener('pointermove', e => {
+    if (reduce) return;
+    const r = cta.getBoundingClientRect();
+    cta.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.25}px, ${(e.clientY - r.top - r.height / 2) * 0.35}px)`;
+  });
+  cta.addEventListener('pointerleave', () => { cta.style.transform = ''; });
+
+  /* ---------- Tekst wchodzi i wychodzi w rytm rozdziału ---------- */
+  const copies = chapters.map(c => $('.copy', c));
+  const animCopy = (y) => {
+    const vh = innerHeight;
+    chapters.forEach((c, i) => {
+      const top = T[i], h = c.offsetHeight;
+      const inP = clamp((y - top + vh * 0.55) / (vh * 0.55));
+      const outP = i < N - 1 ? clamp((y - (top + h - vh * 1.45)) / (vh * 0.5)) : 0;
+      const o = Math.min(inP, 1 - outP);
+      const el = copies[i];
+      el.style.opacity = reduce ? (o > 0.5 ? 1 : 0) : o.toFixed(3);
+      el.style.transform = reduce ? '' : `translate3d(0, ${((1 - inP) * 40 - outP * 40).toFixed(1)}px, 0)`;
+      el.style.filter = reduce ? '' : `blur(${((1 - o) * 8).toFixed(2)}px)`;
+    });
+  };
+
+  /* ---------- Pętla ---------- */
+  let lastY = scrollY, vel = 0, t0 = performance.now();
+  const frame = (now) => {
+    const y = scrollY;
+    vel += (Math.min(Math.abs(y - lastY) / innerHeight, 0.25) - vel) * 0.12; lastY = y;
+    mouse.x += (mouse.tx - mouse.x) * 0.06; mouse.y += (mouse.ty - mouse.y) * 0.06;
+    const s = story(y);
+    setActive(s.tp > 0.5 ? s.i + 1 : s.i);
+    animCopy(y);
+    if (G && G.tex.length) {
+      const { U } = G, a = s.i, b = Math.min(s.i + 1, N - 1);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, G.tex[a]);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, G.tex[b]);
+      gl.uniform2f(U.uRes, canvas.width, canvas.height);
+      gl.uniform2f(U.rA, G.size[a][0], G.size[a][1]); gl.uniform2f(U.rB, G.size[b][0], G.size[b][1]);
+      gl.uniform2f(U.uMouse, reduce ? 0 : mouse.x, reduce ? 0 : mouse.y);
+      gl.uniform1f(U.uP, s.tp);
+      gl.uniform1f(U.uT, (now - t0) / 1000);
+      gl.uniform1f(U.uType, reduce ? 3 : TYPES[b]);
+      gl.uniform1f(U.uVel, reduce ? 0 : vel);
+      // powolny najazd kamery w czasie trwania rozdziału
+      gl.uniform1f(U.uZA, 1.02 + (reduce ? 0 : s.local * 0.08));
+      gl.uniform1f(U.uZB, 1.02);
+      gl.uniform1f(U.uMotion, reduce ? 0 : 1);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    if (lenis) lenis.raf(now);
+    requestAnimationFrame(frame);
+  };
+
+  Promise.race([Promise.all(images), timeout.then(() => null)]).then(async (res) => {
+    const ims = res || await Promise.all(images.map(p => Promise.race([p, Promise.resolve(null)])));
+    if (G) {
+      G.tex = ims.map(im => mkTex(im));
+      G.size = ims.map(im => im ? [im.naturalWidth, im.naturalHeight] : [16, 9]);
+    } else {
+      // Bez WebGL: zwykłe tło z kadrem bieżącego rozdziału
+      const fb = $('#fallback'); fb.hidden = false; canvas.hidden = true;
+      const setFb = () => { const s = story(scrollY); fb.style.backgroundImage = `url(${IMGS[s.tp > 0.5 ? s.i + 1 : s.i]})`; };
+      addEventListener('scroll', setFb, { passive: true }); setFb();
+    }
+    $('#loader').classList.add('done');
+    requestAnimationFrame(frame);
+  });
+
+  /* ---------- Opinie ---------- */
+  const qs = $$('.q'); let qi = 0;
+  if (!reduce) setInterval(() => { qs[qi].classList.remove('on'); qi = (qi + 1) % qs.length; qs[qi].classList.add('on'); }, 6500);
+
+  /* ---------- Okno rozmowy ---------- */
+  const dlg = $('#dlg');
+  const open = () => { $('#dlg-done').hidden = true; dlg.showModal(); lenis && lenis.stop(); };
+  $$('[data-open]').forEach(b => { b.addEventListener('click', open); b.addEventListener('keydown', e => { if (e.key === 'Enter' && b.tagName === 'LI') open(); }); });
+  $('#dlg-close').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => lenis && lenis.start());
+  $('#dlg-form').addEventListener('submit', e => { e.preventDefault(); $('#dlg-done').hidden = false; });
+
+  /* ---------- Nawigacja ---------- */
+  $$('[data-go]').forEach(a => a.addEventListener('click', e => {
+    const el = $(a.getAttribute('href')); if (!el) return; e.preventDefault();
+    const y = el.offsetTop + (el.id === 'c0' ? 0 : innerHeight * 0.3);
+    lenis ? lenis.scrollTo(y, { duration: 2 }) : scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+  }));
+})();
+</script>
