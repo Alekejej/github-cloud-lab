@@ -1,0 +1,763 @@
+<title>AX Studio v2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="AX Studio projektuje i koduje strony internetowe, identyfikacje wizualne, grafiki i motion design oraz buduje automatyzacje dla firm.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Geist:wght@400;500;600&family=Caveat:wght@500;700&family=Fredoka:wght@400;600&family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=JetBrains+Mono:wght@400;700&family=Archivo:wdth,wght@62..125,400..900&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap">
+<style>
+/* Układ: jedna opowieść przewijana w pionie; każdy rozdział to inny „świat" wizualny,
+   kolejne ekrany nasuwają się na poprzednie przez inne przejście. Strona celowo
+   nie ma trybu jasny/ciemny: każdy rozdział ma własną, stałą paletę. */
+:root{
+  color-scheme: dark;
+  /* Rozdział 0 i finał — w duchu Lusion */
+  --hero-bg:#e6e9f0; --hero-ink:#0c0f1c; --hero-accent:#2c46ff; --hero-muted:#5b6175;
+  /* Rozdział 1 — piaskownica */
+  --sand-bg:#ffd54a; --sand-ink:#1d2a6e; --sand-red:#ff5436; --sand-paper:#fff8dc;
+  /* Rozdział 2 — dwa światy */
+  --wa-bg:#f2d6cc; --wa-ink:#5b0f22; --wb-bg:#0a0f1f; --wb-ink:#6be3ff;
+  /* Rozdział 3 — szwajcarski editorial */
+  --sw-bg:#f7f7f5; --sw-ink:#111111; --sw-red:#e30613; --sw-line:#d6d6d2;
+  /* Rozdział 4 — luksus */
+  --lux-bg:#10291f; --lux-ink:#ebe1c9; --lux-gold:#c9a96b; --lux-dim:#7f8f7f;
+  /* Rozdział 5 — terminal */
+  --t-bg:#0d0a05; --t-amber:#ffb000; --t-dim:#80600f;
+
+  --f-hero:"Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --f-body:"Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-hand:"Caveat", "Comic Sans MS", cursive;
+  --f-round:"Fredoka", "Trebuchet MS", sans-serif;
+  --f-serif:"Fraunces", Georgia, "Times New Roman", serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --f-swiss:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-lux:"Cormorant Garamond", Garamond, Georgia, serif;
+
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+}
+html{background:var(--hero-bg)}
+body{background:var(--hero-bg);color:var(--hero-ink);font-family:var(--f-body);font-size:16px;line-height:1.55;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:120;background:var(--hero-bg)}
+*{box-sizing:border-box}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--hero-accent);outline-offset:3px}
+.wrap{padding-left:calc(var(--gutter-l) + 2vw);padding-right:calc(var(--gutter-r) + 2vw);max-width:1440px;margin:0 auto}
+.label{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase}
+.todo{background:rgba(255,0,140,.14);outline:1px dashed currentColor;padding:0 .25em;border-radius:3px}
+
+/* ---------- Nawigacja ---------- */
+.nav{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding-block:18px;padding-left:calc(var(--gutter-l) + 2vw);padding-right:calc(var(--gutter-r) + 2vw);
+  color:#fff;mix-blend-mode:difference;pointer-events:none}
+.nav a{pointer-events:auto;text-decoration:none}
+.logo{font-family:var(--f-hero);font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
+.nav ul{display:flex;gap:22px;list-style:none;margin:0;padding:0;font-size:.9rem}
+.nav ul a:hover{text-decoration:underline;text-underline-offset:4px}
+@media (max-width:720px){.nav ul{display:none}}
+
+/* ---------- Płótno WebGL ---------- */
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ---------- Sekcje ---------- */
+main{position:relative}
+.sec{position:relative;overflow:hidden;width:100%}
+.s-hero{z-index:1}.s-sand{z-index:2}.s-worlds{z-index:3}.s-swiss{z-index:4}.s-lux{z-index:5}.s-term{z-index:6}.s-final{z-index:7}
+
+/* Rozdział 0 — hero */
+.s-hero{min-height:100vh;min-height:100svh;display:flex;align-items:flex-end;background:transparent;padding-block:120px 64px}
+.s-hero .wrap{width:100%;display:grid;gap:28px}
+.hero-eyebrow{color:var(--hero-muted)}
+.hero-title{font-family:var(--f-hero);font-weight:700;font-size:clamp(3rem,10vw,9.5rem);line-height:.9;letter-spacing:-.045em;color:var(--hero-ink)}
+.hero-title .ln{display:block;overflow:hidden;padding-bottom:.06em}
+.hero-title .ln > span{display:inline-block}
+.hero-title em{font-style:normal;color:var(--hero-accent)}
+.hero-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px}
+.hero-seo{max-width:46ch;font-size:1.05rem;color:var(--hero-ink)}
+.scroll-hint{display:flex;align-items:center;gap:10px;color:var(--hero-muted)}
+.scroll-hint i{display:block;width:1px;height:42px;background:currentColor;transform-origin:top;animation:hint 2s ease-in-out infinite}
+@keyframes hint{0%{transform:scaleY(0)}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* Rozdział 1 — piaskownica */
+.s-sand{background:var(--sand-bg);color:var(--sand-ink);padding-block:clamp(96px,14vh,160px) clamp(80px,12vh,140px)}
+.s-sand .label{color:var(--sand-ink)}
+.sand-title{font-family:var(--f-hand);font-weight:700;font-size:clamp(3rem,8.5vw,7.5rem);line-height:.95;margin-top:18px;max-width:14ch}
+.sand-title u{text-decoration:none;background:linear-gradient(transparent 62%, rgba(255,84,54,.55) 62%, rgba(255,84,54,.55) 88%, transparent 88%)}
+.sand-lead{font-family:var(--f-round);font-size:clamp(1.1rem,1.7vw,1.35rem);max-width:52ch;margin-top:28px}
+.sand-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;margin-top:64px}
+.sticker{background:var(--sand-paper);border:3px solid var(--sand-ink);border-radius:18px 6px 22px 8px;padding:20px 18px 22px;box-shadow:6px 6px 0 var(--sand-ink);font-family:var(--f-round);min-width:0}
+.sticker:nth-child(1){rotate:-2.5deg}.sticker:nth-child(2){rotate:1.8deg;margin-top:28px}.sticker:nth-child(3){rotate:-1deg}.sticker:nth-child(4){rotate:2.4deg;margin-top:20px;background:var(--sand-red);color:var(--sand-paper)}
+.sticker h3{font-family:var(--f-hand);font-size:2rem;line-height:1;margin-bottom:8px}
+.sticker p{font-size:.98rem}
+.doodles{position:absolute;inset:0;pointer-events:none;width:100%;height:100%}
+.doodles path,.doodles circle,.doodles polyline{fill:none;stroke:var(--sand-ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.doodles .red{stroke:var(--sand-red)}
+@media (max-width:900px){.sand-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.sand-grid{grid-template-columns:minmax(0,1fr)}.sticker{margin-top:0!important}}
+
+/* Rozdział 2 — dwa światy */
+.s-worlds{height:100vh;height:100svh;min-height:560px;--split:50%;touch-action:pan-y;cursor:ew-resize}
+.world{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center}
+.world-a{background:var(--wa-bg);color:var(--wa-ink)}
+.world-b{background:var(--wb-bg);color:var(--wb-ink);clip-path:inset(0 0 0 var(--split))}
+.world .wrap{width:100%}
+.world h2{font-size:clamp(2.4rem,5.6vw,5.6rem);line-height:.95}
+.world p{margin-top:24px;font-size:clamp(1rem,1.4vw,1.15rem)}
+.world .copy{max-width:min(40vw,560px)}
+.world-b .copy{margin-left:auto;text-align:right}
+.world-a h2{font-family:var(--f-serif);font-style:italic;font-weight:400;letter-spacing:-.02em}
+.world-a p{font-family:var(--f-serif)}
+.world-b h2{font-family:var(--f-mono);font-weight:700;letter-spacing:-.06em;text-transform:lowercase}
+.world-b p{font-family:var(--f-mono);font-size:clamp(.9rem,1.3vw,1.05rem)}
+.world .side{position:absolute;bottom:calc(32px + env(safe-area-inset-bottom,0px));font-family:var(--f-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase}
+.world-a .side{left:calc(var(--gutter-l) + 2vw)}
+.world-b .side{right:calc(var(--gutter-r) + 2vw)}
+.world .chapter{position:absolute;top:calc(84px + env(safe-area-inset-top,0px));left:calc(var(--gutter-l) + 2vw)}
+.seam{position:absolute;top:0;bottom:0;left:var(--split);width:2px;margin-left:-1px;background:linear-gradient(var(--wa-ink),var(--wb-ink));pointer-events:none}
+.seam span{position:absolute;top:50%;left:50%;translate:-50% -50%;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--wb-bg);color:var(--wb-ink);border:2px solid var(--wb-ink);font-family:var(--f-mono);font-size:.8rem;font-weight:700}
+.seam span b{font-family:var(--f-serif);font-style:italic;font-weight:400;color:var(--wa-bg);font-size:1.1rem}
+/* Telefon: szew poziomy, świat A u góry, świat B na dole */
+@media (max-width:720px){
+  .s-worlds{cursor:ns-resize}
+  .world .copy{max-width:none}
+  .world-b .copy{text-align:left}
+  .world-a{justify-content:flex-start;padding-top:22svh}
+  .world-b{justify-content:flex-end;padding-bottom:20svh;clip-path:inset(var(--split) 0 0 0)}
+  .world-a .side{left:auto;right:calc(var(--gutter-r) + 2vw);bottom:auto;top:calc(var(--split) - 32px)}
+  .seam{top:var(--split);bottom:auto;left:0;right:0;width:auto;height:2px;margin:-1px 0 0;background:linear-gradient(90deg,var(--wa-ink),var(--wb-ink))}
+  .world-b .chapter{display:none}
+}
+
+/* Rozdział 3 — realizacje (Swiss) */
+.s-swiss{background:var(--sw-bg);color:var(--sw-ink);padding-block:clamp(96px,14vh,150px) clamp(72px,10vh,120px);font-family:var(--f-swiss)}
+.sw-head{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-items:end;border-bottom:2px solid var(--sw-ink);padding-bottom:20px}
+.sw-head h2{grid-column:1 / span 9;font-size:clamp(3rem,11.5vw,11rem);font-weight:900;font-stretch:125%;line-height:.82;letter-spacing:-.04em;text-transform:uppercase}
+.sw-head .meta{grid-column:10 / span 3;font-size:.85rem;line-height:1.4}
+.sw-head .meta b{color:var(--sw-red)}
+.sw-note{margin-top:14px;font-size:.8rem;color:#5d5d5a}
+.sw-list{list-style:none;margin:0;padding:0}
+.sw-row{display:grid;grid-template-columns:80px minmax(0,1fr) minmax(0,.8fr) 120px;gap:16px;align-items:baseline;padding:22px 0;border-bottom:1px solid var(--sw-line);position:relative;cursor:pointer}
+.sw-row .n{font-weight:800;font-stretch:62%;font-size:1.1rem;color:var(--sw-red)}
+.sw-row h3{font-size:clamp(1.5rem,3.6vw,3.2rem);font-weight:800;font-stretch:100%;letter-spacing:-.03em;line-height:1;transition:translate .35s cubic-bezier(.2,.8,.2,1)}
+.sw-row .tags{font-size:.85rem;color:#4a4a47}
+.sw-row .yr{font-size:.85rem;text-align:right}
+.sw-row::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:var(--sw-red);transform:scaleX(0);transform-origin:left;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.sw-row:hover::after,.sw-row:focus-visible::after{transform:scaleX(1)}
+.sw-row:hover h3,.sw-row:focus-visible h3{translate:18px 0}
+.sw-swatch{display:none;width:44px;height:44px;border-radius:2px}
+.sw-cta{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:44px}
+.sw-cta p{font-size:clamp(1.3rem,2.6vw,2.2rem);font-weight:800;font-stretch:115%;text-transform:uppercase;letter-spacing:-.02em}
+.btn-swiss{font:inherit;font-weight:800;font-stretch:125%;text-transform:uppercase;background:var(--sw-red);color:#fff;border:0;padding:16px 22px;cursor:pointer}
+.preview{position:fixed;left:0;top:0;width:300px;aspect-ratio:4/3;max-width:100%;pointer-events:none;z-index:80;opacity:0;scale:.6;transition:opacity .25s,scale .35s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+.preview.on{opacity:1;scale:1}
+.preview div{position:absolute;inset:0}
+@media (max-width:820px){
+  .sw-head h2{grid-column:1 / -1}.sw-head .meta{grid-column:1 / -1}
+  .sw-row{grid-template-columns:44px minmax(0,1fr) 44px}
+  .sw-row .tags{grid-column:2}.sw-row .yr{display:none}
+  .sw-swatch{display:block;grid-column:3;grid-row:1}
+}
+
+/* Rozdział 4 — opinie (luksus) */
+.s-lux{background:var(--lux-bg);color:var(--lux-ink);min-height:100vh;min-height:100svh;display:flex;align-items:center;padding-block:120px 96px;font-family:var(--f-lux)}
+.s-lux .wrap{width:100%;display:grid;justify-items:center;text-align:center;gap:34px}
+.lux-label{font-family:var(--f-lux);letter-spacing:.42em;text-transform:uppercase;font-size:.8rem;color:var(--lux-gold)}
+.lux-rule{width:1px;height:64px;background:var(--lux-gold)}
+.quotes{position:relative;width:100%;max-width:980px;display:grid}
+.quote{grid-area:1/1;opacity:0;translate:0 16px;transition:opacity 1.2s ease,translate 1.2s ease;visibility:hidden}
+.quote.on{opacity:1;translate:0 0;visibility:visible}
+.quote blockquote{margin:0;font-style:italic;font-weight:400;font-size:clamp(1.7rem,4vw,3.4rem);line-height:1.15}
+.quote figcaption{margin-top:26px;font-size:.95rem;letter-spacing:.24em;text-transform:uppercase;color:var(--lux-gold)}
+.quote .sample{display:block;margin-top:10px;letter-spacing:.08em;text-transform:none;font-style:italic;color:var(--lux-dim)}
+.dots{display:flex;gap:14px}
+.dots button{width:34px;height:2px;padding:0;border:0;background:var(--lux-dim);cursor:pointer;position:relative}
+.dots button::before{content:"";position:absolute;inset:-10px 0}
+.dots button[aria-current="true"]{background:var(--lux-gold)}
+
+/* Rozdział 5 — automatyzacje (terminal) */
+.s-term{background:var(--t-bg);color:var(--t-amber);font-family:var(--f-mono);padding-block:clamp(96px,14vh,150px) clamp(96px,14vh,150px)}
+.s-term::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+.term-inner{position:relative;transform-origin:50% 30%}
+.t-title{font-size:clamp(2.2rem,8vw,7rem);line-height:.9;font-weight:700;letter-spacing:-.05em;text-shadow:0 0 18px rgba(255,176,0,.45)}
+.t-title .cur{display:inline-block;width:.55em;height:.8em;background:var(--t-amber);vertical-align:-.05em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.t-lead{margin-top:24px;max-width:60ch;color:#ffd27a}
+.flow{list-style:none;margin:56px 0 0;padding:0;display:flex;align-items:stretch;flex-wrap:nowrap}
+.flow li{display:flex;align-items:center;flex:1 1 0;min-width:0}
+.flow li:last-child{flex:0 1 auto}
+.node{border:1px solid var(--t-amber);padding:14px 14px;min-width:0;font-size:.85rem;line-height:1.35;background:rgba(255,176,0,.05);box-shadow:0 0 0 1px rgba(255,176,0,.08) inset}
+.node b{display:block;font-size:.7rem;color:var(--t-dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.wire{position:relative;flex:1 1 auto;height:1px;min-width:28px;background:repeating-linear-gradient(90deg,var(--t-dim) 0 6px,transparent 6px 10px)}
+.wire i{position:absolute;top:-3px;left:0;width:7px;height:7px;background:var(--t-amber);box-shadow:0 0 10px var(--t-amber);animation:pulse 2.4s linear infinite}
+.flow li:nth-child(2) .wire i{animation-delay:.6s}.flow li:nth-child(3) .wire i{animation-delay:1.2s}.flow li:nth-child(4) .wire i{animation-delay:1.8s}
+@keyframes pulse{from{left:0}to{left:calc(100% - 7px)}}
+.t-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:40px;margin-top:56px}
+.log{border:1px solid var(--t-dim);padding:18px;font-size:.85rem;line-height:1.8;min-height:240px;overflow-x:auto}
+.log .ln{white-space:pre-wrap}
+.log .ok{color:#fff2cc}
+.js-motion .log .ln{opacity:.12;transition:opacity .2s}
+.js-motion .log .ln.on{opacity:1}
+.svc{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.svc li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;font-size:.92rem}
+.svc li::before{content:"[x]";color:var(--t-dim)}
+@media (max-width:820px){
+  .flow{flex-direction:column}
+  .flow li{flex-direction:column;align-items:stretch}
+  .wire{width:1px;height:34px;min-width:0;margin-left:20px;background:repeating-linear-gradient(180deg,var(--t-dim) 0 6px,transparent 6px 10px)}
+  .wire i{left:-3px!important;animation-name:pulsev}
+  .t-cols{grid-template-columns:minmax(0,1fr)}
+}
+@keyframes pulsev{from{top:0}to{top:calc(100% - 7px)}}
+
+/* Finał */
+.s-final{background:transparent;min-height:100vh;min-height:100svh;display:flex;align-items:center;padding-block:140px 0;flex-direction:column;justify-content:space-between}
+.s-final .wrap{width:100%}
+@media (max-width:720px){.s-final{padding-top:44svh}}
+.final-title{font-family:var(--f-hero);font-weight:700;font-size:clamp(2.8rem,9vw,8.5rem);line-height:.9;letter-spacing:-.045em;max-width:11ch}
+.final-lead{margin-top:28px;max-width:44ch;font-size:1.15rem}
+.btn-big{margin-top:40px;display:inline-flex;align-items:center;gap:16px;font-family:var(--f-hero);font-weight:600;font-size:clamp(1.1rem,2vw,1.5rem);background:var(--hero-ink);color:var(--hero-bg);border:0;border-radius:999px;padding:22px 34px;cursor:pointer;transition:background .3s,scale .3s}
+.btn-big:hover{background:var(--hero-accent);scale:1.03}
+.btn-big span{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--hero-bg);color:var(--hero-ink)}
+.foot{width:100%;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding-block:28px calc(28px + env(safe-area-inset-bottom,0px));padding-left:calc(var(--gutter-l) + 2vw);padding-right:calc(var(--gutter-r) + 2vw);font-size:.85rem;color:var(--hero-muted);border-top:1px solid rgba(12,15,28,.12);margin-top:80px}
+
+/* ---------- Przycisk przeplatający się przez ekrany ---------- */
+.cta{position:fixed;z-index:90;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  display:inline-flex;align-items:center;gap:10px;padding:15px 22px;max-width:calc(100vw - 40px);cursor:pointer;border:2px solid transparent;font-size:1rem;line-height:1.1;
+  transition:background-color .5s,color .5s,border-radius .5s,border-color .5s,box-shadow .5s,rotate .5s,opacity .4s,translate .4s;white-space:nowrap}
+.cta .dot{width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+.cta.is-hidden{opacity:0;translate:0 24px;pointer-events:none}
+.cta[data-skin="hero"]{background:var(--hero-accent);color:#fff;border-radius:999px;font-family:var(--f-hero);font-weight:600;box-shadow:0 14px 34px -12px rgba(44,70,255,.7)}
+.cta[data-skin="sand"]{background:var(--sand-paper);color:var(--sand-ink);border:3px solid var(--sand-ink);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;font-family:var(--f-hand);font-weight:700;font-size:1.45rem;padding:8px 22px;box-shadow:5px 5px 0 var(--sand-red);rotate:-2deg}
+.cta[data-skin="worlds"]{background:linear-gradient(90deg,var(--wa-bg) 0 50%,var(--wb-bg) 50% 100%);color:var(--wa-ink);border-color:var(--wb-ink);border-radius:6px;font-family:var(--f-serif);font-style:italic}
+.cta[data-skin="worlds"] .t2{color:var(--wb-ink);font-family:var(--f-mono);font-style:normal;font-size:.9em}
+.cta[data-skin="swiss"]{background:var(--sw-red);color:#fff;border-radius:0;font-family:var(--f-swiss);font-weight:800;font-stretch:125%;text-transform:uppercase;letter-spacing:-.01em}
+.cta[data-skin="swiss"] .dot{border-radius:0}
+.cta[data-skin="lux"]{background:rgba(16,41,31,.6);color:var(--lux-gold);border:1px solid var(--lux-gold);border-radius:0;font-family:var(--f-lux);font-style:italic;font-size:1.15rem;letter-spacing:.06em;backdrop-filter:blur(8px)}
+.cta[data-skin="lux"] .dot{width:5px;height:5px}
+.cta[data-skin="term"]{background:#000;color:var(--t-amber);border:1px dashed var(--t-amber);border-radius:0;font-family:var(--f-mono);font-size:.92rem;text-shadow:0 0 10px rgba(255,176,0,.6)}
+.cta[data-skin="term"] .dot{display:none}
+.cta[data-skin="term"] .t1::after{content:"_";animation:blink 1s steps(1) infinite}
+@media (max-width:520px){.cta{left:calc(16px + env(safe-area-inset-left,0px));right:calc(16px + env(safe-area-inset-right,0px));justify-content:center;white-space:normal;text-align:center}}
+
+/* ---------- Okno rozmowy ---------- */
+dialog{border:0;padding:0;max-width:min(560px,calc(100vw - 32px));width:100%;background:var(--hero-bg);color:var(--hero-ink);border-radius:20px}
+dialog::backdrop{background:rgba(12,15,28,.55);backdrop-filter:blur(6px)}
+.dlg{padding:32px;display:grid;gap:18px}
+.dlg h2{font-family:var(--f-hero);font-size:2rem;letter-spacing:-.03em;line-height:1}
+.dlg p{color:var(--hero-muted)}
+.dlg label{display:grid;gap:6px;font-size:.85rem;font-weight:500}
+.dlg input,.dlg select,.dlg textarea{font:inherit;font-size:1rem;padding:12px 14px;border-radius:10px;border:1px solid #c4c8d4;background:#fff;color:var(--hero-ink);width:100%}
+.dlg .row{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap}
+.dlg button{font:inherit;font-weight:600;border-radius:999px;padding:12px 20px;cursor:pointer;border:1px solid var(--hero-ink);background:transparent;color:var(--hero-ink)}
+.dlg button.primary{background:var(--hero-accent);border-color:var(--hero-accent);color:#fff}
+.dlg .done{background:#fff;border-radius:12px;padding:14px 16px;font-size:.92rem}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+
+<header class="nav">
+  <a class="logo" href="#start" data-go>AX Studio</a>
+  <nav aria-label="Rozdziały"><ul>
+    <li><a href="#geneza" data-go>Geneza</a></li>
+    <li><a href="#realizacje" data-go>Realizacje</a></li>
+    <li><a href="#opinie" data-go>Opinie</a></li>
+    <li><a href="#automatyzacje" data-go>Automatyzacje</a></li>
+    <li><a href="#kontakt" data-go>Kontakt</a></li>
+  </ul></nav>
+</header>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<main>
+  <!-- Rozdział 0: strona główna -->
+  <section id="start" class="sec s-hero" data-skin="hero" aria-label="AX Studio">
+    <div class="wrap">
+      <p class="label hero-eyebrow">Studio kreatywno-technologiczne · Polska</p>
+      <h1 class="hero-title"><span class="ln"><span>Dwa światy.</span></span><span class="ln"><span><em>Jedno</em> studio.</span></span></h1>
+      <div class="hero-row">
+        <p class="hero-seo">AX Studio projektuje i koduje strony internetowe, identyfikacje wizualne, grafiki i&nbsp;motion design. Budujemy też automatyzacje, które zdejmują z&nbsp;firm powtarzalną pracę. Łączymy wyobraźnię projektanta z&nbsp;precyzją inżyniera, żeby Twoja marka wyglądała świetnie i&nbsp;działała sprawniej.</p>
+        <p class="label scroll-hint"><i></i>Przewiń. Opowiemy Ci, skąd się wzięliśmy.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rozdział 1: geneza -->
+  <section id="geneza" class="sec s-sand" data-skin="sand" aria-labelledby="sand-h">
+    <svg class="doodles" viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs><filter id="crayon"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="5"/></filter></defs>
+      <g filter="url(#crayon)">
+        <circle class="dd red" cx="1260" cy="150" r="58" pathLength="1"/>
+        <path class="dd red" pathLength="1" d="M1260 60v-30M1260 270v-30M1350 150h30M1140 150h30M1325 85l20-20M1175 235l20-20M1325 215l20 20M1175 65l20 20"/>
+        <path class="dd" pathLength="1" d="M1080 860v-110h40v30h30v-30h40v30h30v-30h40v110zM1160 860v-50a20 20 0 0 1 40 0v50M1180 750v-70l46 18-46 18"/>
+        <path class="dd" pathLength="1" d="M60 900c80-30 160 30 240 0s160-30 240 0 160 30 240 0"/>
+        <path class="dd red" pathLength="1" d="M120 210l14 30 33 4-24 23 6 33-29-16-29 16 6-33-24-23 33-4z"/>
+        <path class="dd" pathLength="1" d="M1340 560c-30-40 20-80 50-50 30-30 80 10 50 50l-50 50z"/>
+      </g>
+    </svg>
+    <div class="wrap">
+      <p class="label">Rozdział 1 · Geneza</p>
+      <h2 id="sand-h" class="sand-title">Wszystko zaczęło się w&nbsp;<u>piaskownicy</u>.</h2>
+      <p class="sand-lead">Kuba i <span class="todo">[imię wspólnika]</span> znają się od dziecka. Jeden budował zamki z&nbsp;piasku, drugi od razu planował do nich fosę z&nbsp;działającym mostem zwodzonym. Zajawki rosły razem z&nbsp;nami: rysunki, pierwsze strony, pierwsze programy, pierwsi klienci.</p>
+      <div class="sand-grid">
+        <article class="sticker"><h3>Piaskownica</h3><p>Pierwsze wspólne projekty. Budżet: wiaderko i&nbsp;łopatka.</p></article>
+        <article class="sticker"><h3>Podwórko</h3><p>Komiksy, gry, rozkręcone piloty. Każdy ciągnął w&nbsp;swoją stronę, ale zawsze razem.</p></article>
+        <article class="sticker"><h3>Pierwsze zlecenia</h3><p>Strona dla znajomego, logo dla sąsiada. Okazało się, że ludzie za to płacą.</p></article>
+        <article class="sticker"><h3>AX Studio</h3><p>Dwie zajawki zamienione w&nbsp;jedno studio. Ta sama radość, większe zamki.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rozdział 2: dwa skrajne światy -->
+  <section id="dwa-swiaty" class="sec s-worlds" data-skin="worlds" aria-labelledby="worlds-h">
+    <div class="world world-a">
+      <p class="label chapter">Rozdział 2 · Dwa skrajne światy</p>
+      <div class="wrap"><div class="copy">
+        <h2 id="worlds-h">Jeden czuje formę.</h2>
+        <p>Kolor, rytm, emocja. Projektuje tak, żeby Twój klient zatrzymał się na sekundę dłużej.</p>
+      </div></div>
+      <p class="side">Świat A · wyobraźnia</p>
+    </div>
+    <div class="world world-b">
+      <p class="label chapter">rozdzial_2 // dwa_swiaty</p>
+      <div class="wrap"><div class="copy">
+        <h2>drugi czuje system.</h2>
+        <p>Logika, kod, automaty. Buduje tak, żeby wszystko działało, gdy Ty śpisz.</p>
+      </div></div>
+      <p class="side">świat_b :: logika</p>
+    </div>
+    <div class="seam" aria-hidden="true"><span><b>A</b>X</span></div>
+  </section>
+
+  <!-- Rozdział 3: realizacje -->
+  <section id="realizacje" class="sec s-swiss" data-skin="swiss" aria-labelledby="sw-h">
+    <div class="wrap">
+      <div class="sw-head">
+        <h2 id="sw-h">Realiza&shy;cje</h2>
+        <p class="meta">Strony, marki, grafiki i&nbsp;systemy. <b>Każdy projekt w&nbsp;innym stylu</b>, bo każdy klient jest inny.</p>
+      </div>
+      <p class="sw-note">Pozycje poniżej to przykłady do podmiany na prawdziwe projekty AX Studio.</p>
+      <ol class="sw-list">
+        <li class="sw-row" tabindex="0" data-art="0"><span class="n">01</span><h3>Sklep z&nbsp;modą</h3><span class="tags">E-commerce · UI · Development</span><span class="yr">2026</span><span class="sw-swatch"></span></li>
+        <li class="sw-row" tabindex="0" data-art="1"><span class="n">02</span><h3>Kawiarnia na rogu</h3><span class="tags">Identyfikacja · Opakowania</span><span class="yr">2026</span><span class="sw-swatch"></span></li>
+        <li class="sw-row" tabindex="0" data-art="2"><span class="n">03</span><h3>Kancelaria prawna</h3><span class="tags">Strona firmowa · Copywriting</span><span class="yr">2025</span><span class="sw-swatch"></span></li>
+        <li class="sw-row" tabindex="0" data-art="3"><span class="n">04</span><h3>Biuro nieruchomości</h3><span class="tags">Automatyzacja leadów · CRM</span><span class="yr">2025</span><span class="sw-swatch"></span></li>
+        <li class="sw-row" tabindex="0" data-art="4"><span class="n">05</span><h3>Marka sportowa</h3><span class="tags">Kampania · Grafika · Motion</span><span class="yr">2025</span><span class="sw-swatch"></span></li>
+      </ol>
+      <div class="sw-cta">
+        <p>Twój projekt może być następny.</p>
+        <button class="btn-swiss" type="button" data-open>Porozmawiaj z Kubą</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rozdział 4: opinie -->
+  <section id="opinie" class="sec s-lux" data-skin="lux" aria-labelledby="lux-h">
+    <div class="wrap">
+      <p class="lux-label" id="lux-h">Rozdział 4 · Opinie</p>
+      <span class="lux-rule" aria-hidden="true"></span>
+      <div class="quotes" aria-live="polite">
+        <figure class="quote on"><blockquote>„Dostaliśmy stronę, którą klienci komentują na spotkaniach. A&nbsp;formularz sam wpada do naszego CRM-u.”</blockquote><figcaption>Imię Nazwisko · Firma<span class="sample">przykładowa opinia, podmienimy na prawdziwą</span></figcaption></figure>
+        <figure class="quote"><blockquote>„Jedna ekipa zrobiła nam logo, stronę i&nbsp;automatyczne faktury. Nie musieliśmy niczego tłumaczyć dwa razy.”</blockquote><figcaption>Imię Nazwisko · Firma<span class="sample">przykładowa opinia, podmienimy na prawdziwą</span></figcaption></figure>
+        <figure class="quote"><blockquote>„Kuba najpierw zapytał o&nbsp;nasz biznes, dopiero potem o&nbsp;kolory. To było najlepsze pierwsze spotkanie od lat.”</blockquote><figcaption>Imię Nazwisko · Firma<span class="sample">przykładowa opinia, podmienimy na prawdziwą</span></figcaption></figure>
+      </div>
+      <div class="dots" role="group" aria-label="Wybierz opinię">
+        <button type="button" aria-label="Opinia 1" aria-current="true"></button>
+        <button type="button" aria-label="Opinia 2"></button>
+        <button type="button" aria-label="Opinia 3"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rozdział 5: automatyzacje -->
+  <section id="automatyzacje" class="sec s-term" data-skin="term" aria-labelledby="t-h">
+    <div class="wrap term-inner">
+      <p class="label" style="color:var(--t-dim)">rozdzial_5 // automatyzacje</p>
+      <h2 id="t-h" class="t-title">automatyzacje<span class="cur" aria-hidden="true"></span></h2>
+      <p class="t-lead">Twoja firma robi codziennie te same rzeczy: przepisuje dane, wysyła maile, wystawia faktury, pilnuje terminów. Te zadania możemy oddać maszynom, a&nbsp;Twoi ludzie zajmą się tym, w&nbsp;czym są dobrzy.</p>
+      <ol class="flow" aria-label="Przykładowy przepływ automatyzacji">
+        <li><div class="node"><b>wejście</b>Formularz na stronie</div><span class="wire"><i></i></span></li>
+        <li><div class="node"><b>zapis</b>Klient w CRM</div><span class="wire"><i></i></span></li>
+        <li><div class="node"><b>dokument</b>Wycena PDF</div><span class="wire"><i></i></span></li>
+        <li><div class="node"><b>kontakt</b>E-mail do klienta</div><span class="wire"><i></i></span></li>
+        <li><div class="node"><b>alert</b>Powiadomienie do Kuby</div></li>
+      </ol>
+      <div class="t-cols">
+        <div class="log" aria-label="Przykładowy dziennik automatyzacji">
+          <div class="ln">$ ax run lead-flow --przyklad</div>
+          <div class="ln">[09:00:01] nowe zapytanie z formularza: „strona dla kliniki”</div>
+          <div class="ln">[09:00:02] klient zapisany w CRM</div>
+          <div class="ln">[09:00:04] wygenerowano wstępną wycenę (PDF)</div>
+          <div class="ln">[09:00:05] wysłano e-mail z podziękowaniem i wyceną</div>
+          <div class="ln">[09:00:05] Kuba dostał powiadomienie na telefon</div>
+          <div class="ln ok">[09:00:06] gotowe. nikt niczego nie przepisywał ręcznie.</div>
+        </div>
+        <ul class="svc">
+          <li>Obsługa zapytań i leadów od formularza do CRM</li>
+          <li>Faktury, przypomnienia o płatnościach, raporty</li>
+          <li>Integracje narzędzi, których już używasz</li>
+          <li>Asystenci AI do odpowiedzi i dokumentów</li>
+          <li>Panele z liczbami, które naprawdę czytasz</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Finał: kontakt -->
+  <section id="kontakt" class="sec s-final" data-skin="final" aria-labelledby="f-h">
+    <div class="wrap">
+      <p class="label hero-eyebrow">Rozdział 6 · Twoja kolej</p>
+      <h2 id="f-h" class="final-title">Dwa światy. Jeden cel: Twoja firma.</h2>
+      <p class="final-lead">Umów rozmowę z&nbsp;Kubą. Opowiedz, czym się zajmujesz i&nbsp;co Cię blokuje. Może wspólnie znajdziemy sposób, jak pomóc Twojej firmie w&nbsp;rozwoju.</p>
+      <button class="btn-big" type="button" data-open>Umów rozmowę z&nbsp;Kubą <span aria-hidden="true">→</span></button>
+    </div>
+    <footer class="foot"><span>© 2026 AX Studio · ax-studio.pl</span><span>Prototyp koncepcji v2 · treści robocze</span></footer>
+  </section>
+</main>
+
+<button class="cta" id="cta" type="button" data-skin="hero" data-open><span class="dot" aria-hidden="true"></span><span class="t1">Umów rozmowę z Kubą</span><span class="t2"></span></button>
+<div class="preview" id="preview" aria-hidden="true"><div></div></div>
+
+<dialog id="dlg" aria-labelledby="dlg-h">
+  <form class="dlg" id="dlg-form" method="dialog">
+    <h2 id="dlg-h">Rozmowa z Kubą</h2>
+    <p>Napisz dwa zdania o swojej firmie. Kuba odezwie się i zaproponuje termin.</p>
+    <label for="f-name">Imię<input id="f-name" name="name" autocomplete="given-name" required></label>
+    <label for="f-mail">E-mail<input id="f-mail" name="email" type="email" autocomplete="email" required></label>
+    <label for="f-topic">W czym możemy pomóc?
+      <select id="f-topic" name="topic"><option>Nowa strona internetowa</option><option>Identyfikacja wizualna i grafiki</option><option>Automatyzacja w firmie</option><option>Jeszcze nie wiem, chcę pogadać</option></select>
+    </label>
+    <label for="f-msg">Kilka słów o firmie<textarea id="f-msg" name="msg" rows="3"></textarea></label>
+    <p class="done" id="dlg-done" hidden>To prototyp, więc formularz niczego jeszcze nie wysyła. W wersji produkcyjnej podepniemy tu kalendarz Kuby.</p>
+    <div class="row"><button type="button" id="dlg-close">Zamknij</button><button type="submit" class="primary">Wyślij</button></div>
+  </form>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasGsap = !!(window.gsap && window.ScrollTrigger);
+  const motion = hasGsap && !reduce;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const vh = () => window.innerHeight;
+  if (motion) document.documentElement.classList.add('js-motion');
+
+  /* ---------- Płynny scroll ---------- */
+  let lenis = null;
+  if (motion) {
+    gsap.registerPlugin(ScrollTrigger);
+    if (window.Lenis) {
+      lenis = new Lenis({ lerp: 0.09 });
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add(t => lenis.raf(t * 1000));
+      gsap.ticker.lagSmoothing(0);
+    }
+  }
+
+  /* ---------- WebGL: dwie krople, które z czasem stają się jedną ---------- */
+  const gl = (() => {
+    const canvas = $('#gl');
+    const ctx = canvas.getContext('webgl', { premultipliedAlpha: true, antialias: false, alpha: true });
+    if (!ctx) return null;
+    const vs = `attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
+    const fs = `precision highp float;
+uniform vec2 uRes;uniform float uTime;uniform vec2 uMouse;uniform float uMerge;uniform vec3 uOff;uniform float uScale;
+float smin(float a,float b,float k){float h=clamp(.5+.5*(b-a)/k,0.,1.);return mix(b,a,h)-k*h*(1.-h);}
+vec3 ca,cb;
+vec2 map(vec3 p){
+  p=(p-uOff)/uScale;
+  float w=sin(p.x*3.1+uTime*.9)*sin(p.y*2.7+uTime*1.1)*sin(p.z*3.3+uTime*.7)*.06;
+  float a=length(p-ca)-.82+w;
+  float b=length(p-cb)-.82-w;
+  float k=mix(.45,.9,uMerge);
+  float d=smin(a,b,k);
+  return vec2(d*uScale,clamp(.5+.5*(a-b)/k,0.,1.));
+}
+vec3 nrm(vec3 p){vec2 e=vec2(.0015,0.);return normalize(vec3(map(p+e.xyy).x-map(p-e.xyy).x,map(p+e.yxy).x-map(p-e.yxy).x,map(p+e.yyx).x-map(p-e.yyx).x));}
+vec3 env(vec3 r){float y=r.y*.5+.5;vec3 c=mix(vec3(.78,.81,.9),vec3(1.),smoothstep(.3,.9,y));c+=vec3(.6,.7,1.)*pow(max(r.x*.6+r.y*.8,0.),18.)*1.5;return c;}
+void main(){
+  vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;
+  float sep=mix(1.,.0,uMerge);
+  float t=uTime;
+  ca=vec3(-sep*.75+sin(t*.55)*.1,sep*.65+sin(t*.7)*.1,0.)+vec3(uMouse*.15,0.);
+  cb=vec3(sep*.75+cos(t*.45)*.1,-sep*.65+cos(t*.6)*.1,sin(t*.5)*.2)-vec3(uMouse*.15,0.);
+  vec3 ro=vec3(0.,0.,4.6),rd=normalize(vec3(uv,-1.75));
+  vec3 oc=ro-uOff;float bb=dot(oc,rd),cc=dot(oc,oc)-7.5*uScale*uScale,h=bb*bb-cc;
+  if(h<0.){gl_FragColor=vec4(0.);return;}
+  float tt=max(-bb-sqrt(h),0.);vec2 m;bool hit=false;
+  for(int i=0;i<72;i++){vec3 p=ro+rd*tt;m=map(p);if(m.x<.001){hit=true;break;}tt+=m.x;if(tt>9.)break;}
+  if(!hit){gl_FragColor=vec4(0.);return;}
+  vec3 p=ro+rd*tt,n=nrm(p),r=reflect(rd,n);
+  vec3 L=normalize(vec3(.6,.8,.7));
+  float dif=max(dot(n,L),0.),fre=pow(1.-max(dot(n,-rd),0.),3.);
+  float spe=pow(max(dot(r,L),0.),60.);
+  vec3 blue=vec3(.17,.27,1.),ink=vec3(.035,.04,.08);
+  vec3 base=mix(blue,ink,m.y);
+  vec3 col=base*(.35+.75*dif)+env(r)*mix(.25,.55,m.y)*fre+vec3(1.)*spe*1.2;
+  col+=mix(vec3(.25,.35,1.),vec3(.1),m.y)*pow(max(-n.y,0.),2.)*.35;
+  gl_FragColor=vec4(col,1.);
+}`;
+    const sh = (type, src) => { const s = ctx.createShader(type); ctx.shaderSource(s, src); ctx.compileShader(s); if (!ctx.getShaderParameter(s, ctx.COMPILE_STATUS)) { console.warn(ctx.getShaderInfoLog(s)); return null; } return s; };
+    const v = sh(ctx.VERTEX_SHADER, vs), f = sh(ctx.FRAGMENT_SHADER, fs);
+    if (!v || !f) return null;
+    const pr = ctx.createProgram(); ctx.attachShader(pr, v); ctx.attachShader(pr, f); ctx.linkProgram(pr); ctx.useProgram(pr);
+    const buf = ctx.createBuffer(); ctx.bindBuffer(ctx.ARRAY_BUFFER, buf);
+    ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), ctx.STATIC_DRAW);
+    const loc = ctx.getAttribLocation(pr, 'p'); ctx.enableVertexAttribArray(loc); ctx.vertexAttribPointer(loc, 2, ctx.FLOAT, false, 0, 0);
+    const U = n => ctx.getUniformLocation(pr, n);
+    const u = { res: U('uRes'), time: U('uTime'), mouse: U('uMouse'), merge: U('uMerge'), off: U('uOff'), scale: U('uScale') };
+    const state = { merge: 0, mergeT: 0, mx: 0, my: 0, tmx: 0, tmy: 0, anchor: 0 };
+    const resize = () => {
+      let dpr = Math.min(devicePixelRatio || 1, 1.5);
+      const px = innerWidth * innerHeight;
+      if (px * dpr * dpr > 2.4e6) dpr = Math.sqrt(2.4e6 / px);
+      canvas.width = Math.round(innerWidth * dpr); canvas.height = Math.round(innerHeight * dpr);
+      ctx.viewport(0, 0, canvas.width, canvas.height);
+    };
+    resize(); addEventListener('resize', resize);
+    addEventListener('pointermove', e => { state.tmx = e.clientX / innerWidth * 2 - 1; state.tmy = -(e.clientY / innerHeight * 2 - 1); });
+    const t0 = performance.now();
+    const draw = (now) => {
+      const k = reduce ? 1 : 0.06;
+      state.merge += (state.mergeT - state.merge) * k;
+      state.mx += (state.tmx - state.mx) * 0.05; state.my += (state.tmy - state.my) * 0.05;
+      // Szeroki ekran: krople po prawej, obok tekstu. Wąski: małe, nad tekstem.
+      const narrow = innerWidth / innerHeight < 1;
+      // Krople jadą razem z sekcją, do której należą (hero albo finał).
+      const halfH = 0.5 * 4.6 / 1.75;
+      const sy = state.anchor + (narrow ? 0.2 : 0.47) * innerHeight;
+      const o = [narrow ? 0.12 : 1.5, (0.5 - sy / innerHeight) * 2 * halfH, 0];
+      ctx.uniform2f(u.res, canvas.width, canvas.height);
+      ctx.uniform1f(u.time, reduce ? 2.0 : (now - t0) / 1000);
+      ctx.uniform2f(u.mouse, state.mx, state.my);
+      ctx.uniform1f(u.merge, state.merge);
+      ctx.uniform3f(u.off, o[0], o[1], o[2]);
+      ctx.uniform1f(u.scale, narrow ? 0.44 : 0.8);
+      ctx.clearColor(0, 0, 0, 0); ctx.clear(ctx.COLOR_BUFFER_BIT);
+      ctx.drawArrays(ctx.TRIANGLES, 0, 3);
+    };
+    return { canvas, state, draw };
+  })();
+
+  /* Rysuj tylko wtedy, gdy hero albo finał są widoczne */
+  const finalSec = $('#kontakt');
+  const glVisible = () => scrollY < vh() * 1.05 || finalSec.getBoundingClientRect().top < vh();
+  if (gl) {
+    const loop = (now) => {
+      const show = glVisible();
+      gl.canvas.style.visibility = show ? 'visible' : 'hidden';
+      if (show) {
+        const fr = finalSec.getBoundingClientRect();
+        const fp = Math.min(Math.max(1 - fr.top / vh(), 0), 1);
+        const hp = Math.min(scrollY / vh(), 1);
+        gl.state.mergeT = fp > 0 ? 0.35 + 0.65 * fp : hp * 0.35;
+        gl.state.anchor = fp > 0 ? fr.top : $('#start').getBoundingClientRect().top;
+        gl.draw(now);
+      }
+      if (!reduce) requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+    if (reduce) addEventListener('scroll', () => requestAnimationFrame(loop), { passive: true });
+  }
+
+  /* ---------- Przycisk-kameleon ---------- */
+  const cta = $('#cta');
+  const skins = {
+    hero:   ['Umów rozmowę z Kubą', ''],
+    sand:   ['Chodź do piaskownicy, pogadaj z Kubą', ''],
+    worlds: ['Kuba połączy ', 'oba_swiaty'],
+    swiss:  ['Rozmowa z Kubą →', ''],
+    lux:    ['Zarezerwuj rozmowę z Kubą', ''],
+    term:   ['> umow --z kuba', ''],
+  };
+  let curSkin = 'hero', inFinal = false, inlineVis = 0;
+  const syncHidden = () => cta.classList.toggle('is-hidden', inFinal || inlineVis > 0);
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(en => { inlineVis += en.isIntersecting ? 1 : (en.target._seen ? -1 : 0); en.target._seen = en.isIntersecting; syncHidden(); }));
+    $$('.btn-swiss, .btn-big').forEach(b => io.observe(b));
+  }
+  const setSkin = (name) => {
+    inFinal = name === 'final';
+    syncHidden();
+    if (inFinal || name === curSkin) return;
+    curSkin = name;
+    cta.dataset.skin = name;
+    $('.t1', cta).textContent = skins[name][0];
+    $('.t2', cta).textContent = skins[name][1];
+    if (motion) gsap.fromTo(cta, { scale: 0.82 }, { scale: 1, duration: 0.8, ease: 'elastic.out(1,0.45)' });
+  };
+  const sections = $$('.sec');
+  const pickSkin = () => {
+    const line = vh() * 0.55;
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const r = sections[i].getBoundingClientRect();
+      if (r.top <= line && r.bottom >= line) { setSkin(sections[i].dataset.skin); return; }
+    }
+  };
+  addEventListener('scroll', pickSkin, { passive: true });
+  pickSkin();
+
+  /* ---------- Okno rozmowy ---------- */
+  const dlg = $('#dlg');
+  $$('[data-open]').forEach(b => b.addEventListener('click', () => { $('#dlg-done').hidden = true; dlg.showModal(); lenis && lenis.stop(); }));
+  $('#dlg-close').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => lenis && lenis.start());
+  $('#dlg-form').addEventListener('submit', e => { e.preventDefault(); $('#dlg-done').hidden = false; });
+
+  /* ---------- Dwa światy: szew podąża za kursorem ---------- */
+  const worlds = $('#dwa-swiaty');
+  const setSplit = (x) => worlds.style.setProperty('--split', (x * 100).toFixed(2) + '%');
+  const narrowWorlds = matchMedia('(max-width:720px)');
+  worlds.addEventListener('pointermove', e => {
+    const r = worlds.getBoundingClientRect();
+    const v = narrowWorlds.matches ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width;
+    setSplit(Math.min(Math.max(v, 0.04), 0.96));
+  });
+
+  /* ---------- Realizacje: podgląd za kursorem ---------- */
+  const arts = [
+    'radial-gradient(circle at 30% 30%,#ffd1dc 0 18%,transparent 19%),linear-gradient(135deg,#111 0 50%,#e30613 50%)',
+    'radial-gradient(circle at 50% 55%,#3b2316 0 22%,#c98b4f 23% 30%,#f1e3cc 31%)',
+    'linear-gradient(90deg,#0d1b2a 0 62%,#c9a96b 62% 64%,#0d1b2a 64%)',
+    'repeating-linear-gradient(90deg,#1b4dff 0 14px,#e8edff 14px 28px)',
+    'conic-gradient(from 210deg at 40% 60%,#ff5a1f,#ffe14a,#00c389,#ff5a1f)',
+  ];
+  const prev = $('#preview'), prevIn = $('div', prev);
+  $$('.sw-row').forEach(row => {
+    const a = arts[+row.dataset.art];
+    $('.sw-swatch', row).style.background = a;
+    row.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; prevIn.style.background = a; prev.classList.add('on'); });
+    row.addEventListener('pointerleave', () => prev.classList.remove('on'));
+    row.addEventListener('keydown', e => { if (e.key === 'Enter') dlg.showModal(); });
+  });
+  addEventListener('pointermove', e => {
+    if (!prev.classList.contains('on')) return;
+    const x = Math.min(e.clientX + 24, innerWidth - prev.offsetWidth - 8);
+    prev.style.transform = `translate(${x}px, ${e.clientY - prev.offsetHeight / 2}px) rotate(${(e.movementX || 0) * 0.3}deg)`;
+  });
+
+  /* ---------- Opinie: wolne przenikanie ---------- */
+  const quotes = $$('.quote'), dots = $$('.dots button');
+  let qi = 0, qTimer = null;
+  const showQ = (i) => {
+    qi = i;
+    quotes.forEach((q, k) => q.classList.toggle('on', k === i));
+    dots.forEach((d, k) => d.setAttribute('aria-current', k === i ? 'true' : 'false'));
+  };
+  const startQ = () => { clearInterval(qTimer); if (!reduce) qTimer = setInterval(() => showQ((qi + 1) % quotes.length), 6500); };
+  dots.forEach((d, k) => d.addEventListener('click', () => { showQ(k); startQ(); }));
+  startQ();
+
+  /* ---------- Nawigacja ---------- */
+  const naturalTop = (el) => {
+    const n = el.parentElement.classList.contains('pin-spacer') ? el.parentElement : el;
+    return n.getBoundingClientRect().top + scrollY;
+  };
+  $$('[data-go]').forEach(a => a.addEventListener('click', e => {
+    const el = $(a.getAttribute('href')); if (!el) return;
+    e.preventDefault();
+    const y = naturalTop(el) + (el.id === 'start' ? 0 : 1);
+    lenis ? lenis.scrollTo(y, { duration: 1.6 }) : scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+  }));
+
+  if (!motion) return;
+
+  /* ================================================================
+     PRZEJŚCIA MIĘDZY ROZDZIAŁAMI
+     Każdy ekran zostaje przypięty, a następny nasuwa się na niego
+     z innym, „własnym" przejściem.
+     ================================================================ */
+  const pinOrder = ['#start', '#geneza', '#dwa-swiaty', '#realizacje', '#opinie'];
+  pinOrder.forEach(sel => {
+    ScrollTrigger.create({ trigger: sel, start: 'bottom bottom', end: '+=100%', pin: true, pinSpacing: false });
+  });
+
+  const reveal = (sel, fn, ease = 'none') => {
+    const el = $(sel);
+    const o = { p: 0 };
+    fn(el, 0);
+    gsap.to(o, { p: 1, ease, scrollTrigger: { trigger: el, start: 'top bottom', end: 'top top', scrub: 0.6 }, onUpdate: () => fn(el, o.p) });
+  };
+  const clamp01 = v => Math.min(Math.max(v, 0), 1);
+  const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  // 0 → 1: koło rozlewa się od dołu jak wysypany piasek
+  reveal('#geneza', (el, p) => { el.style.clipPath = `circle(${(easeIO(p) * 150).toFixed(2)}% at 50% 100%)`; });
+
+  // 1 → 2: szew rozcina ekran od środka na dwa światy
+  reveal('#dwa-swiaty', (el, p) => {
+    const e = easeIO(p), side = (50 * (1 - e)).toFixed(2);
+    el.style.clipPath = `inset(0 ${side}% 0 ${side}%)`;
+  });
+
+  // 2 → 3: żaluzje, czyli szwajcarska siatka 12 kolumn
+  reveal('#realizacje', (el, p) => {
+    const n = 12, w = 100 / n, pts = [];
+    for (let i = 0; i < n; i++) {
+      const pi = easeIO(clamp01((p - (i / n) * 0.45) / 0.55));
+      const x0 = i * w, x1 = x0 + w * pi + (pi > 0.999 ? 0.05 : 0);
+      pts.push(`${x0}% 0%`, `${x0}% 100%`, `${x1}% 100%`, `${x1}% 0%`);
+    }
+    el.style.clipPath = `polygon(${pts.join(',')})`;
+  });
+
+  // 3 → 4: kurtyna rozsuwa się pionowo, powoli, jak w teatrze
+  reveal('#opinie', (el, p) => {
+    const e = easeIO(p), v = (50 * (1 - e)).toFixed(2);
+    el.style.clipPath = `inset(${v}% 0 ${v}% 0)`;
+    $('.wrap', el).style.transform = `scale(${(1.12 - 0.12 * e).toFixed(4)})`;
+  });
+
+  // 4 → 5: włączenie monitora CRT: kreska, potem cały obraz
+  reveal('#automatyzacje', (el, p) => {
+    const a = clamp01(p / 0.45), b = clamp01((p - 0.45) / 0.55);
+    const sx = (50 * (1 - easeIO(a))).toFixed(2);
+    const sy = (49.6 * (1 - easeIO(b))).toFixed(2);
+    el.style.clipPath = `inset(${sy}% ${sx}% ${sy}% ${sx}%)`;
+    el.style.filter = b < 1 ? `brightness(${(1 + (1 - b) * 2.2).toFixed(2)})` : '';
+  });
+
+  // 5 → 6: przelot przez terminal, który rozmywa się w finale
+  gsap.to('.term-inner', {
+    scale: 1.25, opacity: 0, filter: 'blur(10px)', ease: 'none',
+    scrollTrigger: { trigger: '#kontakt', start: 'top bottom', end: 'top 20%', scrub: 0.6 },
+  });
+
+  /* ---------- Ruch wewnątrz rozdziałów ---------- */
+  // Hero: wejście tytułu
+  gsap.from('.hero-title .ln > span', { yPercent: 110, duration: 1.3, ease: 'expo.out', stagger: 0.12, delay: 0.15 });
+  gsap.to('.s-hero .wrap', { yPercent: -18, ease: 'none', scrollTrigger: { trigger: '#geneza', start: 'top bottom', end: 'top top', scrub: true } });
+
+  // Piaskownica: kredkowe rysunki rysują się podczas przewijania
+  $$('.dd').forEach((d, i) => {
+    d.style.strokeDasharray = '1'; d.style.strokeDashoffset = '1';
+    gsap.to(d, { strokeDashoffset: 0, ease: 'none', scrollTrigger: { trigger: '#geneza', start: `top ${70 - i * 6}%`, end: 'center center', scrub: 0.8 } });
+  });
+  gsap.from('.sticker', { y: 80, rotate: (i) => (i % 2 ? 8 : -8), ease: 'back.out(1.6)', duration: 0.9, stagger: 0.1,
+    scrollTrigger: { trigger: '.sand-grid', start: 'top 85%' } });
+
+  // Dwa światy: szew sam przejeżdża przez ekran przy wejściu
+  const sp = { v: 0.96 };
+  gsap.to(sp, { v: 0.5, ease: 'power3.inOut', scrollTrigger: { trigger: '#dwa-swiaty', start: 'top 60%', end: 'top top', scrub: 0.8 }, onUpdate: () => setSplit(sp.v) });
+
+  // Realizacje: tytuł rozciąga się w poziomie
+  gsap.fromTo('.sw-head h2', { fontStretch: '62%' }, { fontStretch: '125%', ease: 'none', scrollTrigger: { trigger: '#realizacje', start: 'top 70%', end: 'top 10%', scrub: true } });
+
+  // Automatyzacje: dziennik zapisuje się linia po linii
+  const lines = $$('.log .ln');
+  ScrollTrigger.create({ trigger: '.log', start: 'top 85%', end: 'bottom 45%', scrub: true,
+    onUpdate: s => { const n = Math.round(s.progress * lines.length); lines.forEach((l, i) => l.classList.toggle('on', i < n)); } });
+
+  // Finał: tytuł wjeżdża linia po linii
+  gsap.from('.final-title', { y: 80, ease: 'none', scrollTrigger: { trigger: '#kontakt', start: 'top bottom', end: 'top 25%', scrub: 0.6 } });
+
+  addEventListener('load', () => ScrollTrigger.refresh());
+  document.fonts && document.fonts.ready.then(() => ScrollTrigger.refresh());
+})();
+</script>
