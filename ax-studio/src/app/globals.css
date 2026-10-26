@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/*
+ * AX Studio jest projektowane z myślą o starszych użytkownikach:
+ * duży tekst, wysoki kontrast, duże pola klikania, wyraźny fokus.
+ */
+:root {
+  --background: #f7f5f0;
+  --surface: #ffffff;
+  --foreground: #1a1a1a;
+  --muted: #4a4a4a;
+  --border: #b8b2a7;
+  --primary: #0b4f8a;
+  --primary-hover: #083b68;
+  --danger: #a3191d;
+  --success: #1d6b2f;
+  --focus: #f2a900;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --font-sans: var(--font-atkinson), Arial, Helvetica, sans-serif;
+}
+
+html {
+  font-size: 20px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+
+input,
+select,
+textarea {
+  background: var(--surface);
+}
+
+@media print {
+  html {
+    font-size: 12pt;
+  }
+  body {
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
