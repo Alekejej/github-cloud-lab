@@ -20,8 +20,8 @@ export function ReminderList({ reminders, returnTo }: { reminders: Reminder[]; r
               </span>
             </span>
             <form action={setReminderDone.bind(null, r.id, !r.done, returnTo)}>
-              <button className={`min-h-12 rounded-xl border-2 px-4 text-lg font-bold ${
-                r.done ? "border-border text-muted" : "border-success text-success hover:bg-green-50"
+              <button className={`min-h-12 rounded-full border-2 px-5 text-lg font-semibold ${
+                r.done ? "border-border text-muted" : "border-success text-success hover:bg-success-soft"
               }`}>
                 {r.done ? "Przywróć" : "✓ Zrobione"}
               </button>

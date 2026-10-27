@@ -13,7 +13,7 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
 
   return (
     <>
-      <PageHeader title="Nowa faktura" />
+      <PageHeader eyebrow="Faktury" title="Nowa faktura" />
       <Notice {...await noticeFrom(searchParams)} />
       {!clients?.length ? (
         <Card>

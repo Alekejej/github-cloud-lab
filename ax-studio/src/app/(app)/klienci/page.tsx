@@ -14,7 +14,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
 
   return (
     <>
-      <PageHeader title="Klienci">
+      <PageHeader eyebrow="Twoja kartoteka" title="Klienci">
         <LinkButton href="/klienci/nowy">+ Dodaj klienta</LinkButton>
       </PageHeader>
       <Notice {...notice} />
@@ -26,10 +26,10 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
             name="szukaj"
             defaultValue={query}
             placeholder="Wpisz nazwę klienta…"
-            className="w-full rounded-lg border-2 border-border px-4 py-3 text-lg"
+            className="w-full rounded-xl border-2 border-field px-4 py-3 text-lg"
           />
         </label>
-        <button className="min-h-14 rounded-xl border-2 border-primary px-6 text-lg font-bold text-primary">Szukaj</button>
+        <button className="min-h-14 rounded-full border-2 border-foreground px-6 text-lg font-semibold text-foreground hover:bg-foreground hover:text-white">Szukaj</button>
       </form>
 
       {!clients?.length ? (
@@ -37,10 +37,10 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
           {query ? "Nie znaleziono klienta o tej nazwie." : "Nie masz jeszcze żadnych klientów. Kliknij „Dodaj klienta”."}
         </EmptyState>
       ) : (
-        <ul className="divide-y-2 divide-border rounded-2xl border-2 border-border bg-surface">
+        <ul className="divide-y-2 divide-border overflow-hidden rounded-3xl bg-surface">
           {clients.map((c) => (
             <li key={c.id}>
-              <Link href={`/klienci/${c.id}`} className="flex flex-wrap items-center justify-between gap-2 p-5 hover:bg-blue-50">
+              <Link href={`/klienci/${c.id}`} className="flex flex-wrap items-center justify-between gap-2 p-5 hover:bg-primary-soft">
                 <span className="text-xl font-bold text-primary underline">{c.name}</span>
                 <span className="text-muted">{[c.phone, c.email].filter(Boolean).join(" · ")}</span>
               </Link>

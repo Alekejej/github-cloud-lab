@@ -1,20 +1,26 @@
 @import "tailwindcss";
 
 /*
- * AX Studio jest projektowane z myślą o starszych użytkownikach:
- * duży tekst, wysoki kontrast, duże pola klikania, wyraźny fokus.
+ * Wygląd AX Studio: jasnoszare tło, granatowy tekst, elektryczny niebieski akcent,
+ * nagłówki w Bricolage Grotesque, treść w Geist, etykiety w JetBrains Mono.
+ * Dostosowane do starszych użytkowników: duży tekst, kontrast min. 4.5:1,
+ * duże pola klikania, wyraźny fokus.
  */
 :root {
-  --background: #f7f5f0;
+  --background: #e6e9f0;
   --surface: #ffffff;
-  --foreground: #1a1a1a;
-  --muted: #4a4a4a;
-  --border: #b8b2a7;
-  --primary: #0b4f8a;
-  --primary-hover: #083b68;
-  --danger: #a3191d;
+  --foreground: #0c0f1c;
+  --muted: #5b6175;
+  --border: #c4c8d4;
+  --field: #8a90a3;
+  --primary: #2c46ff;
+  --primary-hover: #1f33c7;
+  --primary-soft: #e3e7ff;
+  --danger: #b3261e;
+  --danger-soft: #fde8e6;
   --success: #1d6b2f;
-  --focus: #f2a900;
+  --success-soft: #e3f3e6;
+  --warning-soft: #fff1c2;
 }
 
 @theme inline {
@@ -23,11 +29,18 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-field: var(--field);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
-  --font-sans: var(--font-atkinson), Arial, Helvetica, sans-serif;
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+  --font-sans: var(--font-geist), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-bricolage), "Arial Narrow", system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, Menlo, Consolas, monospace;
 }
 
 html {
@@ -37,13 +50,22 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
-  line-height: 1.5;
+  font-family: var(--font-geist), system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-bricolage), "Arial Narrow", system-ui, sans-serif;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
 }
 
 :focus-visible {
-  outline: 4px solid var(--focus);
-  outline-offset: 2px;
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
 }
 
 input,

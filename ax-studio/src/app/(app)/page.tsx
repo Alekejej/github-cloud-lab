@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card, EmptyState, LinkButton, Notice } from "@/components/ui";
+import { Card, EmptyState, Eyebrow, LinkButton, Notice } from "@/components/ui";
 import { ReminderList, type Reminder } from "@/components/reminder-list";
 import { createClient } from "@/lib/supabase/server";
 import { formatPLN } from "@/lib/money";
@@ -24,8 +24,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
 
   return (
     <>
-      <h1 className="mb-2 text-4xl font-bold">Dzień dobry{profile?.name ? `, ${profile.name}` : ""}!</h1>
-      <p className="mb-8 text-xl text-muted">Dzisiaj jest {formatDate(today)}.</p>
+      <Eyebrow>Dzisiaj jest {formatDate(today)}</Eyebrow>
+      <h1 className="mb-8 text-5xl font-bold md:text-6xl">
+        Dzień dobry{profile?.name ? <>, <span className="text-primary">{profile.name}</span></> : ""}!
+      </h1>
       <Notice {...await noticeFrom(searchParams)} />
 
       <div className="mb-8 flex flex-wrap gap-3">

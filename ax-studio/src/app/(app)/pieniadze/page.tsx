@@ -30,15 +30,15 @@ export default async function MoneyPage({ searchParams }: { searchParams: Search
 
   return (
     <>
-      <PageHeader title="Przychody i koszty" />
+      <PageHeader eyebrow="Księgowość" title="Przychody i koszty" />
       <Notice {...await noticeFrom(searchParams)} />
 
       <nav aria-label="Wybór miesiąca" className="mb-6 flex flex-wrap items-center gap-4">
-        <Link href={`?miesiac=${prev}`} className="min-h-12 rounded-xl border-2 border-primary px-4 py-2 text-lg font-bold text-primary">
+        <Link href={`?miesiac=${prev}`} className="min-h-12 rounded-full border-2 border-foreground px-4 py-2 text-lg font-semibold text-foreground hover:bg-foreground hover:text-white">
           ← Poprzedni
         </Link>
         <span className="text-2xl font-bold capitalize">{monthName(from)}</span>
-        <Link href={`?miesiac=${next}`} className="min-h-12 rounded-xl border-2 border-primary px-4 py-2 text-lg font-bold text-primary">
+        <Link href={`?miesiac=${next}`} className="min-h-12 rounded-full border-2 border-foreground px-4 py-2 text-lg font-semibold text-foreground hover:bg-foreground hover:text-white">
           Następny →
         </Link>
       </nav>
@@ -57,10 +57,10 @@ export default async function MoneyPage({ searchParams }: { searchParams: Search
           <fieldset>
             <legend className="mb-2 text-lg font-bold">Rodzaj</legend>
             <div className="flex flex-wrap gap-4">
-              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border-2 border-border px-5 text-lg has-[:checked]:border-success has-[:checked]:bg-green-50">
+              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-full border-2 border-field px-5 text-lg has-[:checked]:border-success has-[:checked]:bg-success-soft">
                 <input type="radio" name="kind" value="income" defaultChecked className="size-6" /> Przychód (wpłynęło)
               </label>
-              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border-2 border-border px-5 text-lg has-[:checked]:border-danger has-[:checked]:bg-red-50">
+              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-full border-2 border-field px-5 text-lg has-[:checked]:border-danger has-[:checked]:bg-danger-soft">
                 <input type="radio" name="kind" value="expense" className="size-6" /> Koszt (wydałem)
               </label>
             </div>
@@ -77,7 +77,7 @@ export default async function MoneyPage({ searchParams }: { searchParams: Search
       {!rows?.length ? (
         <EmptyState>Brak wpisów w tym miesiącu.</EmptyState>
       ) : (
-        <ul className="divide-y-2 divide-border rounded-2xl border-2 border-border bg-surface">
+        <ul className="divide-y-2 divide-border overflow-hidden rounded-3xl bg-surface">
           {rows.map((r) => (
             <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 p-5">
               <span>

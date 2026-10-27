@@ -30,7 +30,7 @@ export default async function ClientPage({
 
   return (
     <>
-      <PageHeader title={client.name}>
+      <PageHeader eyebrow="Klient" title={client.name}>
         <LinkButton href={`/faktury/nowa?klient=${client.id}`}>+ Wystaw fakturę</LinkButton>
         {client.phone && (
           <LinkButton variant="secondary" href={`tel:${client.phone}`}>

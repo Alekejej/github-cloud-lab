@@ -9,7 +9,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
 
   return (
     <>
-      <PageHeader title="Moja firma" />
+      <PageHeader eyebrow="Ustawienia" title="Moja firma" />
       <Notice {...await noticeFrom(searchParams)} />
       <Card>
         <p className="mb-6 text-lg text-muted">Te dane pojawią się na każdej wystawionej fakturze.</p>

@@ -2,12 +2,12 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
 const buttonBase =
-  "inline-flex min-h-14 items-center justify-center gap-2 rounded-xl px-6 py-3 text-lg font-bold transition-colors";
+  "inline-flex min-h-14 items-center justify-center gap-2 rounded-full px-7 py-3 font-display text-lg font-semibold tracking-tight transition-colors";
 
 const variants = {
-  primary: "bg-primary text-white hover:bg-primary-hover",
-  secondary: "border-2 border-primary bg-surface text-primary hover:bg-blue-50",
-  danger: "border-2 border-danger bg-surface text-danger hover:bg-red-50",
+  primary: "bg-primary text-white shadow-[0_14px_34px_-14px_rgba(44,70,255,.7)] hover:bg-primary-hover",
+  secondary: "border-2 border-foreground bg-transparent text-foreground hover:bg-foreground hover:text-white",
+  danger: "border-2 border-danger bg-surface text-danger hover:bg-danger-soft",
 };
 
 type Variant = keyof typeof variants;
@@ -28,10 +28,18 @@ export function LinkButton({
   return <Link className={`${buttonBase} ${variants[variant]} ${className}`} {...props} />;
 }
 
-export function PageHeader({ title, children }: { title: string; children?: ReactNode }) {
+/** Mała etykieta nad nagłówkiem, w stylu marki (mono, wersaliki). */
+export function Eyebrow({ children }: { children: ReactNode }) {
+  return <p className="mb-2 font-mono text-sm uppercase tracking-[0.14em] text-muted">{children}</p>;
+}
+
+export function PageHeader({ title, eyebrow, children }: { title: string; eyebrow?: string; children?: ReactNode }) {
   return (
-    <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-      <h1 className="text-4xl font-bold">{title}</h1>
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+        <h1 className="text-5xl font-bold">{title}</h1>
+      </div>
       {children && <div className="flex flex-wrap gap-3">{children}</div>}
     </div>
   );
@@ -39,15 +47,15 @@ export function PageHeader({ title, children }: { title: string; children?: Reac
 
 export function Card({ title, children, className = "" }: { title?: string; children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-2xl border-2 border-border bg-surface p-6 ${className}`}>
-      {title && <h2 className="mb-4 text-2xl font-bold">{title}</h2>}
+    <section className={`rounded-3xl bg-surface p-6 md:p-8 ${className}`}>
+      {title && <h2 className="mb-5 text-3xl font-bold">{title}</h2>}
       {children}
     </section>
   );
 }
 
 const inputClass =
-  "w-full rounded-lg border-2 border-border px-4 py-3 text-lg focus:border-primary";
+  "w-full rounded-xl border-2 border-field px-4 py-3 text-lg focus:border-primary";
 
 type FieldProps = {
   label: string;
@@ -58,7 +66,7 @@ type FieldProps = {
 export function Field({ label, name, hint, className = "", ...props }: FieldProps) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1 block text-lg font-bold">{label}</span>
+      <span className="mb-1 block text-lg font-semibold">{label}</span>
       {hint && <span className="mb-2 block text-muted">{hint}</span>}
       <input name={name} className={inputClass} {...props} />
     </label>
@@ -72,7 +80,7 @@ export function TextArea({
 }: { label: string; name: string } & ComponentProps<"textarea">) {
   return (
     <label className="block">
-      <span className="mb-1 block text-lg font-bold">{label}</span>
+      <span className="mb-1 block text-lg font-semibold">{label}</span>
       <textarea name={name} rows={3} className={inputClass} {...props} />
     </label>
   );
@@ -86,7 +94,7 @@ export function Select({
 }: { label: string; name: string; children: ReactNode } & ComponentProps<"select">) {
   return (
     <label className="block">
-      <span className="mb-1 block text-lg font-bold">{label}</span>
+      <span className="mb-1 block text-lg font-semibold">{label}</span>
       <select name={name} className={inputClass} {...props}>
         {children}
       </select>
@@ -98,14 +106,14 @@ export function Select({
 export function Notice({ ok, error }: { ok?: string; error?: string }) {
   if (error) {
     return (
-      <p role="alert" className="mb-6 rounded-xl border-2 border-danger bg-red-50 p-4 text-lg font-bold text-danger">
+      <p role="alert" className="mb-6 rounded-2xl border-2 border-danger bg-danger-soft p-4 text-lg font-bold text-danger">
         {error}
       </p>
     );
   }
   if (ok) {
     return (
-      <p role="status" className="mb-6 rounded-xl border-2 border-success bg-green-50 p-4 text-lg font-bold text-success">
+      <p role="status" className="mb-6 rounded-2xl border-2 border-success bg-success-soft p-4 text-lg font-bold text-success">
         ✓ {ok}
       </p>
     );
@@ -114,13 +122,13 @@ export function Notice({ ok, error }: { ok?: string; error?: string }) {
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {
-  return <p className="rounded-xl border-2 border-dashed border-border p-8 text-center text-lg text-muted">{children}</p>;
+  return <p className="rounded-2xl border-2 border-dashed border-border p-8 text-center text-lg text-muted">{children}</p>;
 }
 
 export function StatusBadge({ paid }: { paid: boolean }) {
   return paid ? (
-    <span className="rounded-full bg-green-100 px-3 py-1 font-bold text-success">Opłacona</span>
+    <span className="rounded-full bg-success-soft px-3 py-1 font-semibold text-success">Opłacona</span>
   ) : (
-    <span className="rounded-full bg-amber-100 px-3 py-1 font-bold text-amber-900">Do zapłaty</span>
+    <span className="rounded-full bg-warning-soft px-3 py-1 font-semibold text-[#6b4e00]">Do zapłaty</span>
   );
 }

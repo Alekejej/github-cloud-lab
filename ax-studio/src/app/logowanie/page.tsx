@@ -9,7 +9,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
 
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
-      <h1 className="mb-2 text-center text-5xl font-bold text-primary">AX Studio</h1>
+      <p className="mb-3 text-center font-mono text-sm uppercase tracking-[0.14em] text-muted">Panel dla Twojej firmy</p>
+      <h1 className="mb-3 text-center text-6xl font-extrabold">
+        AX <span className="text-primary">Studio</span>
+      </h1>
       <p className="mb-10 text-center text-xl text-muted">Klienci, faktury i pieniądze w jednym miejscu.</p>
       <Notice {...notice} />
       <Card title={register ? "Załóż konto" : "Zaloguj się"}>

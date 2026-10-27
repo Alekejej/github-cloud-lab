@@ -7,7 +7,7 @@ import { formatPLN, parsePLN } from "@/lib/money";
 type Row = { key: number; description: string; quantity: string; unit: string; price: string; vat: VatRate };
 
 const emptyRow = (key: number): Row => ({ key, description: "", quantity: "1", unit: "szt.", price: "", vat: 23 });
-const inputClass = "w-full rounded-lg border-2 border-border px-3 py-3 text-lg";
+const inputClass = "w-full rounded-xl border-2 border-field px-3 py-3 text-lg";
 
 /** Pozycje faktury z podsumowaniem liczonym na bieżąco. */
 export function InvoiceItems() {
@@ -29,7 +29,7 @@ export function InvoiceItems() {
   return (
     <div className="space-y-4">
       {rows.map((row, i) => (
-        <fieldset key={row.key} className="rounded-xl border-2 border-border p-4">
+        <fieldset key={row.key} className="rounded-2xl border-2 border-border p-4">
           <legend className="px-2 text-lg font-bold">Pozycja {i + 1}</legend>
           <div className="grid gap-4 md:grid-cols-12">
             <label className="md:col-span-12">
@@ -78,11 +78,11 @@ export function InvoiceItems() {
       ))}
 
       <button type="button" onClick={() => setRows((rs) => [...rs, emptyRow(Math.max(...rs.map((r) => r.key)) + 1)])}
-        className="min-h-14 rounded-xl border-2 border-dashed border-primary px-6 text-lg font-bold text-primary">
+        className="min-h-14 rounded-full border-2 border-dashed border-primary px-7 text-lg font-semibold text-primary hover:bg-primary-soft">
         + Dodaj kolejną pozycję
       </button>
 
-      <dl className="grid grid-cols-2 gap-2 rounded-xl bg-blue-50 p-4 text-lg md:max-w-md">
+      <dl className="grid grid-cols-2 gap-2 rounded-2xl bg-primary-soft p-5 text-lg md:max-w-md">
         <dt>Netto:</dt><dd className="text-right">{formatPLN(totals.net)}</dd>
         <dt>VAT:</dt><dd className="text-right">{formatPLN(totals.vat)}</dd>
         <dt className="text-2xl font-bold">Do zapłaty:</dt>

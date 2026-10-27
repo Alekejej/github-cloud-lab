@@ -43,7 +43,7 @@ export default async function InvoicePage({
         )}
       </div>
 
-      <article className="rounded-2xl border-2 border-border bg-surface p-8 print:border-0 print:p-0">
+      <article className="overflow-hidden rounded-3xl bg-surface p-8 print:border-0 print:p-0">
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Faktura VAT {invoice.number}</h1>

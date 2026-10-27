@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import { Atkinson_Hyperlegible } from "next/font/google";
+import { Bricolage_Grotesque, Geist, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-// Krój pisma zaprojektowany dla osób słabiej widzących.
-const atkinson = Atkinson_Hyperlegible({
-  variable: "--font-atkinson",
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "700"],
-});
+// Kroje pisma marki AX Studio.
+const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin", "latin-ext"] });
+const geist = Geist({ variable: "--font-geist", subsets: ["latin", "latin-ext"] });
+const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
   title: "AX Studio",
@@ -17,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pl">
-      <body className={`${atkinson.variable} antialiased`}>{children}</body>
+      <body className={`${bricolage.variable} ${geist.variable} ${jetbrains.variable} antialiased`}>{children}</body>
     </html>
   );
 }

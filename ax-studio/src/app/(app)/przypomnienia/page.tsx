@@ -20,7 +20,7 @@ export default async function RemindersPage({ searchParams }: { searchParams: Se
 
   return (
     <>
-      <PageHeader title="Przypomnienia" />
+      <PageHeader eyebrow="Kalendarz" title="Przypomnienia" />
       <Notice {...await noticeFrom(searchParams)} />
 
       <Card title="Nowe przypomnienie" className="mb-8">

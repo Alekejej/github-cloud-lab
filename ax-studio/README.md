@@ -1,8 +1,9 @@
 # AX Studio
 
 Prosty system dla małych firm: **klienci, faktury, przychody i koszty oraz przypomnienia** w jednym miejscu.
-Projektowany z myślą o starszych użytkownikach — duży tekst (20 px), czytelny krój pisma (Atkinson Hyperlegible),
-duże przyciski, wysoki kontrast, polskie nazwy bez żargonu i pytanie „Czy na pewno?” przed każdym usunięciem.
+Wygląd w identyfikacji AX Studio (tło `#e6e9f0`, tekst `#0c0f1c`, akcent `#2c46ff`, Bricolage Grotesque,
+Geist, JetBrains Mono), dostosowany do starszych użytkowników: duży tekst (20 px), kontrast min. 4.5:1, duże
+przyciski, polskie nazwy bez żargonu i pytanie „Czy na pewno?” przed każdym usunięciem.
 
 ## Co potrafi (MVP)
 
@@ -24,10 +25,10 @@ duże przyciski, wysoki kontrast, polskie nazwy bez żargonu i pytanie „Czy na
 
 ## Uruchomienie
 
-1. Załóż projekt w [Supabase](https://supabase.com) i wykonaj SQL z `supabase/migrations/0001_init.sql`
-   (SQL Editor albo `supabase db push`).
+1. Projekt Supabase **AX Studio** (`ujenbpkqtakhxnfsremy`, Frankfurt) jest już założony i ma wgrane migracje
+   z `supabase/migrations/`. Dla nowego projektu: wykonaj te pliki po kolei (SQL Editor albo `supabase db push`).
 2. W Supabase → Authentication → URL Configuration dodaj `http://localhost:3000/auth/confirm` do Redirect URLs.
-3. Skopiuj `.env.example` do `.env.local` i wpisz URL projektu oraz klucz publishable.
+3. Skopiuj `.env.example` do `.env.local` (wartości dla projektu AX Studio są już w nim wpisane).
 4. Uruchom:
 
 ```bash

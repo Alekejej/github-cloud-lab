@@ -16,20 +16,20 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Sea
 
   return (
     <>
-      <PageHeader title="Faktury">
+      <PageHeader eyebrow="Sprzedaż" title="Faktury">
         <LinkButton href="/faktury/nowa">+ Wystaw fakturę</LinkButton>
       </PageHeader>
       <Notice {...await noticeFrom(searchParams)} />
       {!invoices?.length ? (
         <EmptyState>Nie masz jeszcze faktur. Kliknij „Wystaw fakturę”.</EmptyState>
       ) : (
-        <ul className="divide-y-2 divide-border rounded-2xl border-2 border-border bg-surface">
+        <ul className="divide-y-2 divide-border overflow-hidden rounded-3xl bg-surface">
           {invoices.map((inv) => {
             const overdue = inv.status === "unpaid" && inv.due_date < today;
             const client = inv.clients as unknown as { name: string } | null;
             return (
               <li key={inv.id}>
-                <Link href={`/faktury/${inv.id}`} className="grid gap-2 p-5 hover:bg-blue-50 md:grid-cols-[1fr_1fr_auto_auto] md:items-center md:gap-6">
+                <Link href={`/faktury/${inv.id}`} className="grid gap-2 p-5 hover:bg-primary-soft md:grid-cols-[1fr_1fr_auto_auto] md:items-center md:gap-6">
                   <span>
                     <span className="block text-xl font-bold text-primary underline">{inv.number}</span>
                     <span className="text-muted">{client?.name}</span>
