@@ -1,0 +1,33 @@
+name: AX Studio
+
+on:
+  push:
+    branches: [main]
+    paths: ["ax-studio/**", ".github/workflows/ax-studio.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["ax-studio/**", ".github/workflows/ax-studio.yml"]
+
+defaults:
+  run:
+    working-directory: ax-studio
+
+jobs:
+  check:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ax-studio/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - run: npm run typecheck

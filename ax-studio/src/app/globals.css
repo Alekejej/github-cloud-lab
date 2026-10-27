@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/*
+ * Wygląd AX Studio: jasnoszare tło, granatowy tekst, elektryczny niebieski akcent,
+ * nagłówki w Bricolage Grotesque, treść w Geist, etykiety w JetBrains Mono.
+ * Dostosowane do starszych użytkowników: duży tekst, kontrast min. 4.5:1,
+ * duże pola klikania, wyraźny fokus.
+ */
+:root {
+  --background: #e6e9f0;
+  --surface: #ffffff;
+  --foreground: #0c0f1c;
+  --muted: #5b6175;
+  --border: #c4c8d4;
+  --field: #8a90a3;
+  --primary: #2c46ff;
+  --primary-hover: #1f33c7;
+  --primary-soft: #e3e7ff;
+  --danger: #b3261e;
+  --danger-soft: #fde8e6;
+  --success: #1d6b2f;
+  --success-soft: #e3f3e6;
+  --warning-soft: #fff1c2;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-field: var(--field);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+  --font-sans: var(--font-geist), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-bricolage), "Arial Narrow", system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, Menlo, Consolas, monospace;
+}
+
+html {
+  font-size: 20px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist), system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-bricolage), "Arial Narrow", system-ui, sans-serif;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+input,
+select,
+textarea {
+  background: var(--surface);
+}
+
+@media print {
+  html {
+    font-size: 12pt;
+  }
+  body {
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
